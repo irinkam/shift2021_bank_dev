@@ -1,0 +1,9 @@
+@dictionary
+@entity('TYPE')
+@name('S226. Кредиты. Категория ссуды')
+class S226_LOAN_CTGR {
+	@name('Код')          CODE        [STRING];
+	@name('Наименование') NAME        [STRING];
+	@name('Вид кредита')  CREDIT_TYPE [KIND_CREDITS_REF];
+	@name('Коэффициент')  COEFFICIENT [NUMBER];
+}

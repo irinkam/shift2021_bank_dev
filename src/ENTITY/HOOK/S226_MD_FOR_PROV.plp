@@ -1,0 +1,52 @@
+class HOOK;
+@name('S226. Анализ счета деб/кр при проводке пл. документа') /* Свойство операции "Наименование" */
+static method S226_MD_FOR_PROV is
+pragma include(::[RUNTIME].[DEBUG_MACRO]);
+	S226_MD_FOR_PROV (
+		@name('Документ')                   DOCUMENT   in     [MAIN_DOCUM_REF],
+		@name('Счет дебета')                ACCOUNT_DT in     [AC_FIN_REF],
+		@name('Счет кредита')               ACCOUNT_CT in     [AC_FIN_REF],
+		@name('Признак счета дебета')       IT_DT      in     [BOOLEAN],
+		@name('Признак успешности анализа') ANALYSE_OK in out [BOOLEAN],
+		@name('Дополнительные параметры')   P_ADDS     in out [STRING_32000],
+		@name('Тип вызова')                 P_MESS     in     [STRING_100]
+	) is
+	
+	/*В случае, если проводится платёжный документ (MAIN_DOCUM) по кредиту,
+	 *на который есть актуальная ссылка из справочника «S##. Кредиты. Принадлежность к категории» 
+	 *(на дату проводки документа), в массив «История состояний» (HISTORY_STATE) документа
+	 *необходимо добавить запись с состоянием (STATE) = S##_NOTE_CAT. 
+	 *В реквизит «Дополнительная информация» записи указывается текущее значение
+	 *реквизита «Коэффициент» справочника «S##. Кредиты. Категория ссуды».
+	 */
+		execute is
+			coef 			number;
+			h_state 		[HISTORY_STATES];
+		begin
+			-- ищем категорию
+			select a(a.[CRED_CAT].[COEFFICIENT]) in ::[S226_CRED_CATEG]
+			-- дата проводки должна лежать в пределах даты действия категории
+			where a.[CREDIT]%id = DOCUMENT.[PRODUCT_CT].[ACC_PROD]%id 
+							or a.[CREDIT]%id = DOCUMENT.[PRODUCT_DT].[ACC_PROD]%id 
+							and DOCUMENT.[DATE_PROV] >= a.[DATE_BEG] 
+							and (DOCUMENT.[DATE_PROV] <= a.[DATE_END] or a.[DATE_END] is null
+							)
+			into coef;
+			-- если категория найдена, записываем данные в массив истории состояний
+			h_state%init;
+			&debug('coef ' || coef, 0)
+			h_state.[ADD_INFO] := to_char(coef, '09D00');
+			h_state.[DATE] := sysdate;
+			h_state.[STATE] := 'S226_NOTE_CAT';
+			insert h_state into DOCUMENT.[HISTORY_STATE];
+		--end if;
+		exception
+			when NO_DATA_FOUND then
+			&debug('S226. Категории для данного кредитного договора не найдено', 0)
+		when TOO_MANY_ROWS then
+			&debug('S226. Найдено больше одной категории для данного кредитного договора', 0)
+		when others then
+			&debug('S226. Ошибка при проводке', 0)
+		end;
+	end;
+end; /* конeц static method S226_MD_FOR_PROV */

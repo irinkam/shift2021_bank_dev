@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ViewPresentation classId="S226_CRED_CATEG" shortName="VW_CRIT_S226_CRED_CATEG_VIEW">
+    <Properties/>
+    <Columns>
+        <Column alias="C_NUM_DOG" referenceId="0">
+            <Name>Номер договора</Name>
+            <Resizeable>true</Resizeable>
+            <Width>15</Width>
+        </Column>
+        <Column alias="C_DATE_BEGIN" referenceId="0">
+            <Name>Дата начала</Name>
+            <Align>center</Align>
+            <DateFormat>Default(dd/MM/yyyy)</DateFormat>
+            <Resizeable>true</Resizeable>
+            <Width>12</Width>
+        </Column>
+        <Column alias="C_DATE_END" referenceId="0">
+            <Name>Дата окончания</Name>
+            <Align>center</Align>
+            <DateFormat>Default(dd/MM/yyyy)</DateFormat>
+            <Resizeable>true</Resizeable>
+            <Width>12</Width>
+        </Column>
+        <Column alias="C_CATEGORY_NAME" referenceId="1">
+            <Name>Категория</Name>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_COEFF" referenceId="1">
+            <Name>Коэффициент</Name>
+            <Resizeable>true</Resizeable>
+            <Width>15</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+    </Columns>
+</ViewPresentation>

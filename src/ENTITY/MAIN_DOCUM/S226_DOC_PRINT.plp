@@ -1,0 +1,319 @@
+/*
+Задание 8. Освещается в лекции Реализация выгрузки в файл
+	В ТБП «Платёжные документы» (MAIN_DOCUM) создать групповую операцию «S##. Выгрузка документов льготных кредитов». 
+	На экранной форме (ЭФ) операции выгрузки должны присутствовать параметры «Дата начала», «Дата окончания». 
+	Операция должна выгрузить в формате xls проведенные документы с реквизитом «Дата проводки»,
+	соответствующим указанному на ЭФ периоду, у которых в массиве «История состояний» есть запись с состоянием S##_NOTE_CAT.
+	В файл должны выгружаться реквизиты: 
+		•id
+		•Номер
+		•Астрономическая дата проводки (в формате DD.MM.YYYY HH24:MI:SS)
+		•Валюта по дебету (код ISO)
+		•Номер счёта по дебету
+		•Валюта по кредиту (код ISO)
+		•Номер счёта по кредиту
+		•Сумма по дебету
+		•Назначение платежа
+		•Дополнительная информация (выбирается из массива «История состояний» из записи с состоянием S##_NOTE_CAT).
+		Если в истории более одной записи со состоянием S##_NOTE_CAT, выбирается запись с максимальным значением реквизита «Дата». 
+	В первой строке файла указываются заголовки колонок.
+	Для выгрузки необходимо использовать шаблон из «Справочника шаблонов документов».
+	
+---------------------------------------------------------
+Задание 9. Освещается в лекции Реализация выгрузки в файл
+	В операции из задания 8 добавить возможность выбора экспорта в формат xml, разместив на ЭФ чекбоксы «В формат xls», «В формат xml». Выгружаются записи ТБП «Платёжные документы», выбранные по алгоритму задания 8 и все записи порождённых ими массивов «История состояний». 
+	Реквизиты платёжного документа для выгрузки: 
+		•Номер
+		•ФИО исполнителя
+		•Номер счёта по дебету
+		•Номер счёта по кредиту
+		•Сумма по дебету
+		•Наименование клиента из структуры «Реквизиты плательщика». 
+	Также выгружаются все несистемные реквизиты всех записей массива «История состояний» документа.
+	Параметры xml: кодировка WINDOWS-1251, версия 1, заголовок xml файла:
+	exportDesc created="дата_создания" author="ФИО пользователя" comment="Выгрузка документов льготных кредитов"
+	Запись определяется тегом record с заголовком idx="id платёжного документа".
+	Наименования выгружаемого поля определяется тегом field name. Значение определяется тегом value. 
+	Таблица соответствий наименований реквизитов и кодов выгрузки для ТБП «Платёжные документы»:
+	__________________________________________________
+	__Наименование реквизита________|__field_name_____
+	Номер							|	document_num
+	ФИО исполнителя					|	empl_name
+	Номер счёта по дебету			|	num_dt
+	Номер счёта по кредиту			|	num_ct
+	Сумма по дебету					|	totsum
+	Наименование клиента			|	clname
+	История статуса					|	state_hist
+	________________________________|_________________
+
+	Таблица соответствий наименований реквизитов и кодов выгрузки для ТБП «История состояний»:
+	__________________________________________________
+	__Наименование реквизита________|__field_name_____
+	Состояние						|	state
+	Дата							|	date
+	Дополнительная информация		|	add_info
+	________________________________|_________________
+ */
+class MAIN_DOCUM;
+@import_plsql(true)
+@name('S226. Выгрузка документов льготных кредитов') /* Свойство операции "Наименование" */
+static method S226_DOC_PRINT is
+	pragma macro(xl,'::[OOXML].[API_XL]');
+	pragma macro(lib_ooxml,'::[SHABLON_DOC].[LIB_OOXML]');
+	pragma macro(xml,'::[RUNTIME].[XML_DOM]');
+	pragma include(::[RUNTIME].[DEBUG_MACRO]);
+	pragma include(::[RUNTIME].[CSMD]);
+	pragma include(::[RUNTIME].[DEBUG_MACRO]);
+	pragma include(::[OOXML].[API_XL]);
+	
+	-- в процедуре содержится выгрузка данных и форматирование отчета
+	procedure Draw_Report_XLSX(date_from date, date_to date) is
+		n_i integer default 1;
+		iBorder		integer;	-- Идентификатор рамки
+	begin
+		&xl.Open_Sheet(1);
+		
+		iBorder	:= &xl.get_border
+				( p_top		== &xl.xl_b_thin
+				, p_bottom	== &xl.xl_b_thin
+				, p_left	== &xl.xl_b_thin
+				, p_right	== &xl.xl_b_thin
+				);
+				
+		-- выгрузка реквизитов
+		for (select a(a%id																									: C_PROD_ID
+					,a.[DOCUMENT_NUM]																						: C_NUMBER
+					,a.[ASTR_DATE_PROV]																						: C_ASTR_DATE_PROV
+					,a.[VALUTA].[CODE_ISO]																					: C_VALUTA_ISO_DT
+					,a.[NUM_DT]																								: C_NUM_DT
+					,a.[VALUTA_PO].[CODE_ISO]																				: C_VALUTA_ISO_KT
+					,a.[NUM_KT]																								: C_NUM_KT
+					,a.[SUM]																								: C_SUM_DT
+					,a.[NAZN]																								: C_NAZN
+					,a.[HISTORY_STATE].[ADD_INFO]																			: C_ADDS
+					--Если в истории более одной записи со состоянием S##_NOTE_CAT, выбирается запись с максимальным значением реквизита «Дата». 
+					,analytic(row_number(), 'over(partition by [1] order by [2] desc)',a%id, a.[ASTR_DATE_PROV])			: C_ROW_NUM
+					
+		)
+		in ::[MAIN_DOCUM]
+		where 	a.[HISTORY_STATE].[STATE] = 'S226_NOTE_CAT' 
+			and trunc(a.[DATE_PROV]) >= date_from 
+			and trunc(a.[DATE_PROV]) <= date_to
+			and a%state in ('PROV','PROV_IN_BANK'))
+		-- заполнение ячеек
+		loop
+			-- выбираем запись с максимальным значением реквизита дата
+			if a.C_ROW_NUM = 1 then
+				n_i := n_i + 1;
+				&xl.cell(p_row == n_i, p_col == 1, p_value == a.C_PROD_ID, p_borderId == iBorder);
+				&xl.cell(p_row == n_i, p_col == 2, p_value == a.C_NUMBER, p_borderId == iBorder);
+				&xl.cell(p_row == n_i, p_col == 3, p_value == to_char(a.C_ASTR_DATE_PROV, 'DD.MM.YYYY HH24:MI:SS'), p_borderId == iBorder);
+				&xl.cell(p_row == n_i, p_col == 4, p_value == a.C_VALUTA_ISO_DT, p_borderId == iBorder);
+				&xl.cell(p_row == n_i, p_col == 5, p_value == a.C_NUM_DT, p_borderId == iBorder);			
+				&xl.cell(p_row == n_i, p_col == 6, p_value == a.C_VALUTA_ISO_KT, p_borderId == iBorder);
+				&xl.cell(p_row == n_i, p_col == 7, p_value == a.C_NUM_KT, p_borderId == iBorder);
+				&xl.cell(p_row == n_i, p_col == 8, p_value == a.C_SUM_DT, p_borderId == iBorder);
+				&xl.cell(p_row == n_i, p_col == 9, p_value == a.C_NAZN, p_borderId == iBorder);
+				&xl.cell(p_row == n_i, p_col == 10, p_value == a.C_ADDS, p_borderId == iBorder);
+			end if;
+		end loop;
+	end;
+	
+	-- процедура для сохранения XLSX отчета
+	procedure Save_Report_XLSX(date_from date, date_to date, file_path varchar2(1000)) is
+		blob_iblob_new		blob;
+		s_file_name			varchar2(500);
+	begin
+		--загрузка шаблона
+		&lib_ooxml.load_blob('S226_PRINT_LOAN_DOC', blob_iblob_new, null, 'S226_MAIN_DOCUM', null, null);
+		&xl.init_xls;
+
+		-- если шаблон не найден
+		if not &xl.open_file(blob_iblob_new) then
+			pragma error('В справочнике "' || ::[SHABLON_DOC]%classname ||'" не найден шаблон с кодом "S226_PRINT_LOAN_DOC"');
+		else
+			&debug('Шаблон найден', 0)
+		end if;
+
+		--загрузка данных в шаблон
+		Draw_Report_XLSX(date_from, date_to);
+		&xl.finish(blob_iblob_new);
+
+		-- сохранение в файл
+		&debug('s_file_path: ' || file_path,0)
+		s_file_name := 'S226_LOAN_DOC';
+		s_file_name := s_file_name || to_char(sysdate, '_yy_dd_mm_hh24_mi_ss')||'.xlsx';
+		
+		&debug('s_file_name: ' || s_file_name, 0)
+		&lib_ooxml.write_to_file(blob_iblob_new, file_path, s_file_name);
+		
+		[OOXML]::[API_ORSA].putReport2Run(blob_iblob_new,'xlsx');
+
+		stdio.put_line_buf('Выгрузка отчета ' || s_file_name || ' успешно завершена');
+	end;
+	
+	-- процедура добавления полей в узел
+	procedure Add_Text_Node(p_node				in out nocopy &xml.DOMNode, 
+							p_xml_doc			in out nocopy &xml.DOMDocument, 
+							p_node_name 		in varchar2, 
+							p_value 			in [STRING_1000],
+							p_write_empty 		in boolean default false) is
+	begin
+		if p_value is not null then
+			&xml.appendChild(&xml.appendChild(p_node, &xml.makeNode(&xml.createElement(p_xml_doc, p_node_name))),
+						 &xml.makeNode(&xml.createTextNode(p_xml_doc, p_value)));
+		elsif p_value is null and p_write_empty then
+			&xml.appendChild(p_node,&xml.makeNode(&xml.createElement(p_xml_doc, p_node_name)));
+		end if;
+	end;
+	
+	-- процедура формирования и сохранения XML отчета
+	procedure Save_Report_XML(date_from date, date_to date) is
+		s_file_name			varchar2(500);
+		parser						&xml.Parser;
+		xml_doc						&xml.DOMDocument;
+		main_node					&xml.DOMNode;
+		header_node					&xml.DOMNode;
+		record_node 				&xml.DOMNode;
+		root_dir					varchar2;
+		slash 						varchar2(1) := SysInfo.GetValue('DEF_SLASH');
+	begin
+		-- инициализация xml
+		&xml.initialize; -- инициализация библиотеки			
+		parser := &xml.newParser; -- создание парсера
+		&xml.parseBuffer(parser, '<?xml version="1.0" encoding="Windows-1251"?><elm/>'); -- задание параметров
+		xml_doc := &xml.getDocument(parser);
+		
+		-- заполнение данных
+		main_node 	:= &xml.makeNode(xml_doc); -- создание верхнего узла
+		header_node := &xml.makeNode(&xml.createElement(xml_doc, 'exportDesc'));
+		
+		-- добавление полей в узел
+		Add_Text_Node(header_node, xml_doc, 'created', sysdate);
+		Add_Text_Node(header_node, xml_doc, 'author', stdlib.userid.[NAME]);
+		Add_Text_Node(header_node, xml_doc, 'comment', 'Выгрузка документов льготных кредитов');
+		
+		-- пустой узел второго уровня, к которому будем привязывать записи		
+		record_node := &xml.makeNode(&xml.createElement(xml_doc, 'RECORDS'));
+		
+		for (
+			select doc(doc%id																							: C_PROD_ID
+					,doc.[DOCUMENT_NUM]																					: C_NUMBER
+					,doc.[PROV_USER].[NAME]																				: C_PROV_USER
+					,doc.[NUM_DT]																						: C_NUM_DT
+					,doc.[NUM_KT]																						: C_NUM_KT
+					,doc.[SUM]																							: C_SUM_DT
+					,nvl(doc.[KL_DT].[1].[1].[NAME],
+						doc.[KL_DT].[2].[2])																			: C_PAYER_NAME
+					,doc.[HISTORY_STATE]																				: C_HIST_STATE
+					--Если в истории более одной записи со состоянием S##_NOTE_CAT, выбирается запись с максимальным значением реквизита «Дата». 
+					,analytic(row_number(), 'over(partition by [1] order by [2] desc)',doc%id, doc.[ASTR_DATE_PROV])	: C_ROW_NUM
+					) 
+			in ::[MAIN_DOCUM] 
+			where 	doc.[HISTORY_STATE].[STATE] = 'S226_NOTE_CAT' 
+				and trunc(doc.[DATE_PROV]) >= date_from 
+				and trunc(doc.[DATE_PROV]) <= date_to
+				and doc%state in ('PROV','PROV_IN_BANK')
+			)
+		loop
+			declare
+			value_node 		&xml.DOMNode;
+			begin
+				if doc.C_ROW_NUM = 1 then
+					-- создание узла для записи
+					value_node := &xml.makeNode(&xml.createElement(xml_doc, 'record'));
+					&xml.appendChild(record_node, value_node);
+					
+					--&xml.setAttribute(level03_elem, 'idx=', to_char(doc.C_PROD_ID));
+					
+					-- добавление полей в узел
+					add_text_node(value_node, 	xml_doc, 	'document_num', to_char(doc.C_NUMBER));
+					add_text_node(value_node, 	xml_doc, 	'empl_name', 	doc.C_PROV_USER);
+					add_text_node(value_node, 	xml_doc, 	'num_dt', 		to_char(doc.C_NUM_DT));
+					add_text_node(value_node, 	xml_doc,	'num_ct', 		to_char(doc.C_NUM_KT));
+					add_text_node(value_node, 	xml_doc, 	'totsum', 		to_char(doc.C_SUM_DT));
+					add_text_node(value_node, 	xml_doc, 	'clname', 		doc.C_PAYER_NAME);
+					-- вывод записей из массива истории состояний	
+					for hs in doc.C_HIST_STATE
+					loop
+						declare
+						history_node 		&xml.DOMNode;
+						begin
+							history_node := &xml.makeNode(&xml.createElement(xml_doc, 'history_state'));
+							&xml.appendChild(value_node, history_node);
+							&debug('xml 4',0)
+							add_text_node(history_node, 	xml_doc, 	'state', 		hs.[STATE]);
+							add_text_node(history_node, 	xml_doc, 	'date', 		to_char(hs.[DATE], 'DD.MM.YYYY HH24:MI:SS'));
+							add_text_node(history_node, 	xml_doc, 	'add_info', 	hs.[ADD_INFO]);
+						end;
+					end loop;
+				end if;
+			end;
+		end loop;
+		
+		root_dir := stdio.GET_ENV('FIO_ROOT_DIR');
+		&debug('root_dir = '||root_dir,0)
+		
+		&xml.appendChild(header_node, record_node);
+		&xml.replaceChild(main_node, header_node, &xml.makeNode(&xml.getDocumentElement(xml_doc))); -- Подменяем верхний узел на созданный 
+		
+		s_file_name := 'S226_LOAN_DOC';
+		s_file_name := s_file_name || to_char(sysdate, '_yy_dd_mm_hh24_mi_ss')||'.xml';
+		&debug('s_file_name = '||s_file_name,0)
+		
+		&xml.writeToFile(xml_doc, root_dir||slash||s_file_name);
+		stdio.put_line_buf('Выгрузка отчета ' || s_file_name || ' успешно завершена');
+	end;
+	
+	
+	S226_DOC_PRINT (
+		/*На экранной форме (ЭФ) операции выгрузки должны присутствовать параметры «Дата начала», «Дата окончания». 
+	 	* Операция должна выгрузить в формате xls проведенные документы с реквизитом «Дата проводки», 
+	 	* соответствующим указанному на ЭФ периоду, у которых в массиве «История состояний» есть запись с состоянием S##_NOTE_CAT.
+	 	*/
+		@name('Дата начала')    P_DATE_FROM    in [DATE],
+		@name('Дата окончания') P_DATE_TO      in [DATE],
+		-- для выбора формата выгрузки отчета
+		@name('Checkbox .xlsx') P_XLSX_BOOLEAN in [BOOLEAN],
+		@name('Checkbox .xlm')  P_XML_BOOLEAN  in [BOOLEAN]
+	) is
+	
+	
+		validate is
+		begin
+			if P_MESSAGE = 'DEFAULT' then
+				-- предварительное заполнение полей
+				P_DATE_TO := ::[system].[OP_DATE];
+				P_XLSX_BOOLEAN := true;
+				P_XML_BOOLEAN := true;
+			end if;
+		end;
+		
+		
+		execute is
+			s_file_path			varchar2(1000);
+		begin
+			-- проверка заполнения дат
+			if P_DATE_FROM is null or P_DATE_TO is null then
+				pragma error('Должны быть заполнены обе даты!');
+			end if;
+			-- проверка корректности дат
+			if P_DATE_FROM > P_DATE_TO then
+				pragma error('Дата начала не может быть больше даты окончания!');
+			end if;
+			-- проверка формата
+			if P_XLSX_BOOLEAN = false and P_XML_BOOLEAN = false then
+				pragma error('Выберите хотя бы один формат выгрузки!');
+			end if;
+				
+			s_file_path := ::[SYSTEM_PARAMS].[GET]('PATH', true);
+			
+			if P_XLSX_BOOLEAN = true then
+				Save_Report_XLSX(P_DATE_FROM, P_DATE_TO, s_file_path);
+			end if;
+			if P_XML_BOOLEAN = true then
+				Save_Report_XML(P_DATE_FROM, P_DATE_TO);
+			end if;
+		end;
+	end;
+end; /* конeц static method S226_DOC_PRINT */

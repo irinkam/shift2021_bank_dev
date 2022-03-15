@@ -1,0 +1,95 @@
+class PR_CRED;
+@import_plsql(true)
+@name('S226. Редактировать договор') /* Свойство операции "Наименование" */
+@tag('EXTENSION')
+method S226_EDIT_LAST_E instead of S226_EDIT_LAST is
+	-- категория кредита
+	@name('Категория') public V_CRED_CAT [S226_LOAN_CT_REF];
+	old_cat [S226_LOAN_CT_REF];
+	S226_EDIT_LAST_E 
+	 is
+	 
+		validate is /* Секция "Проверка" */
+			category_exist 		ref		[S226_CRED_CATEG];
+		begin
+			&BASE$SETVARS;
+			&BASE$VALIDATE;
+			&BASE$GETVARS;
+			if p_message = 'DEFAULT' then
+				--if p_info is null then
+					-- При поднятии ЭФ «S##. Категория» автоматически заполняется 
+					-- текущим значением категории КД на дату операционного дня филиала
+					-- (далее - дата ОД), т.е. выбирается из справочника 
+					-- «S##. Кредиты. Принадлежность к категории».
+					select a(a)
+					in ::[S226_CRED_CATEG]all
+					where a.[CREDIT]%id = this%id
+					 	and a.[DATE_BEG] <= ::[SYSTEM].[OP_DATE] 
+					 	and (a.[DATE_END] >= ::[SYSTEM].[OP_DATE] OR a.[DATE_END] is null)
+					into category_exist;
+					V_CRED_CAT := category_exist.[CRED_CAT];
+					old_cat := V_CRED_CAT;
+				--end if;
+			end if;
+		exception 
+			when NO_DATA_FOUND then
+				--V_CRED_CAT := null;
+				old_cat := null;
+			when TOO_MANY_ROWS then
+				stdio.put_line_buf('По кредитному договору №' || this.[NUM_DOG] || ' найдено более одной категории на текущую дату операционного дня');
+		
+		end;
+		
+		
+		execute is /* Секция "Тело" */
+		begin
+			&BASE$SETVARS;
+			&BASE$EXECUTE;	
+			--У существующей до изменения записи с пустым реквизитом «Дата окончания» 
+			--данный реквизит заполнить значением (Дата ОД-1). 
+			for credit in [S226_CRED_CATEG]
+			where credit.[DATE_END] is null and credit.[CREDIT] = this
+			loop
+				credit.[DATE_END] := [system].[OP_DATE] - 1;
+			end loop;	
+			/* При редактировании договора существующие до сохранения записи 
+			«S##. Кредиты. Принадлежность к категории» 
+			с датой начала более или равной дате текущего операционного дня филиала 
+			необходимо удалять.*/
+			
+			delete t in ::[S226_CRED_CATEG] where t.[DATE_BEG] >= ::[SYSTEM].[OP_DATE] and t.[CREDIT]%id = this%id;
+			
+			-- изменение категории
+			if old_cat != V_CRED_CAT and V_CRED_CAT is not null then
+				-- установим дату окончания для старой записи
+				update t (t.[DATE_END] = ::[SYSTEM].[OP_DATE] - 1) in ::[S226_CRED_CATEG] 
+				where t.[CREDIT] = this and t.[DATE_END] is null;
+				-- добавим новую запись	
+				::[S226_CRED_CATEG].[NEW_AUTO](P_CREDIT 			== this,
+												 P_DATE_BEG 		== ::[SYSTEM].[OP_DATE],
+												 P_DATE_END 		== null,
+												 P_CRED_CAT 		== V_CRED_CAT);
+			end if;
+			
+			if old_cat is null and V_CRED_CAT is not null then
+				-- добавим новую запись	
+				::[S226_CRED_CATEG].[NEW_AUTO](P_CREDIT 			== this,
+												 P_DATE_BEG 		== ::[SYSTEM].[OP_DATE],
+												 P_DATE_END 		== null,
+												 P_CRED_CAT 		== V_CRED_CAT);
+			end if;
+			--В случае очистки значения «S##. Категория» на ЭФ
+			--новая запись не добавляется, 
+			--изменяется «Дата окончания» для существующей по тому же алгоритму
+			if old_cat is not null and V_CRED_CAT is null then
+				/*for credit in ::[S226_CRED_CATEG]all
+				where credit.[CREDIT]%id = this%id
+				loop
+					credit.[DATE_END] := ::[SYSTEM].[OP_DATE] - 1;
+				end loop;*/
+				update t (t.[DATE_END] = ::[SYSTEM].[OP_DATE] - 1) in ::[S226_CRED_CATEG] 
+				where t.[CREDIT] = this;
+			end if;
+		end;
+	end;
+end; /* конeц method S226_EDIT_LAST_E */

@@ -1,0 +1,80 @@
+@cache(scope:='NONE')
+@clone(columns:={ASTR_DATE_PROV, CATEGORY_INFO, DEPART, DOCUMENT_DATE, DOCUMENT_NUM, DOCUMENT_UNO, DOCUMENT_USER, FILIAL, IN_FOLDER, PACHKA})
+@entity('DOCUMENT')
+@name('Платежные документы')
+@storage('HUGE')
+class MAIN_DOCUM extends DOCUMENT {
+	@name('Счет Дебет')                                                     ACC_DT          [AC_FIN_REF];
+	@name('Счет Кредит')                                                    ACC_KT          [AC_FIN_REF];
+	@name('Дата документа')                                                 DATE_DOC        [DATE];
+	@name('Срок оплаты')                                                    DATE_PL         [DATE];
+	@name('Дата проводки')                                                  DATE_PROV       [DATE_TIME];
+	@name('Дата валютирования')                                             DATE_VAL        [DATE];
+	@name('Реквизиты плательщика')                                          KL_DT           [REQ_CLIENT];
+	@name('Реквизиты получателя')                                           KL_KT           [REQ_CLIENT];
+	@name('Назначение платежа')                                             NAZN            [MEMO];
+	@name('Очередность платежа')                                            PRIORITET       [NUMBER];
+	@name('Сумма Дт')                                                       SUM             [SUMMA];
+	@name('Валюта Дт')                                                      VALUTA          [FT_MONEY_REF];
+	@name('Вид документа')                                                  VID_DOC         [NAME_DOC_REF];
+	@name('Назначения платежа (ссылка)')                                    KOD_NAZN_PAY    [KOD_N_PAY_REF];
+	@name('Вид пересылки документа')                                        DOC_SEND_REF    [DOC_SEND_REF];
+	@name('Вид оборота')                                                    VID_OBOROTA     [VID_OBOROT_REF];
+	@name('Проведено пользователем')                                        PROV_USER       [USER_REF];
+	@name('Сумма документа по символам касплана')                           SUM_KSPL        [SKS_SUM];
+	@name('Операция по счету')                                              ACC_OPER        [ACC_OPER_REF];
+	@name('Номер кассы')                                                    NUM_KS          [KASSES_REF];
+	@name('Уникальный номер контракта')                                     DEAL_PASP       [STRING_22];
+	@name('Валюта Кт')                                                      VALUTA_PO       [FT_MONEY_REF];
+	@name('Сумма Кт')                                                       SUM_PO          [SUMMA];
+	@name('Свойство валютности')                                            MULTICURR       [TRANSVAL_DOC_REF];
+	@name('Сумма нац.')                                                     SUM_NT          [SUMMA];
+	@name('Продукт по счету дебета')                                        PRODUCT_DT      [ACC_PROD_REQ];
+	@name('Номер кассы(доп.)')                                              NUM_KS1         [KASSES_REF];
+	@name('Продукт по счету кредита')                                       PRODUCT_CT      [ACC_PROD_REQ];
+	@name('Дата и время экспорта')                                          DATE_SEND       [DATE_TIME];
+	@name('Реквизиты вносителя/получателя средств')                         REQ_MAN         [SHORT_CLIENT];
+	@name('ДПП')                                                            DPP             [DATE];
+	@name('Квитующий документ')                                             QUIT_DOC        [DOCUMENT_REF];
+	@name('Ярлык, сопровождающий ценность')                                 LABELS          [LABEL_VAL];
+	@name('Номер чека (квитанции 31)')                                      NUM_CHECK       [STRING_9];
+	@name('Серия чека (квитанции 31)')                                      SERIES          [STRING_6];
+	@name('И93-И. Вид операции')                                            I93_OP_TYPE     [I93_OP_TYPE_REF];
+	@name('Тип сообщения')                                                  TYPE_MESS       [SBRF_TYPE_ME_REF];
+	@name('Признак бюджетного платежа')                                     BUDGET_PAYMENT  [BOOLEAN];
+	@name('Не подменять корсчет')                                           NOCHANGE_ACC    [BOOLEAN];
+	@name('Выплаты на зарплату')                                            TO_ZP           [FOR_PAY_ARR];
+	@name('Условное обозначение (шифр)')                                    CODE_DOC        [CODE_PAY_DOC_REF];
+	@name('Условие оплаты (memo)')                                          COND_PAY_MEMO   [MEMO];
+	@name('Курс Дт')                                                        RATE_DT         [SUMMA_16_6];
+	@name('Курс Кт')                                                        RATE_KT         [SUMMA_16_6];
+	@name('Настройки отношения к файлам электронного архива')               FOR_SVOD        [REL2PAPKA_ARR];
+	@name('Настроить счета реализованной курсовой разницы')                 TUNE_DELTA      [VAR_TUNE_RATE];
+	@name('Дата вручения плательщику предусмотренных договором документов') DATE_GIVE       [DATE];
+	@name('СПЭД: Дата отправки клиентом')                                   RC_SEND_DATE    [DATE];
+	@name('СПЭД: Создано пользователем')                                    RC_USER_CREATED [USER_REF];
+	@name('СПЭД: Подписи')                                                  RC_SIGNED_BY    [CL_PRIV_REF_ARR];
+	@name('Отменить пересчет в реестре ценностей')                          NOT_CALC        [BOOLEAN];
+	@name('Дата отметки банка получателя')                                  DATE_NOTE       [DATE];
+	@name('Дата помещения в картотеку')                                     DATE_CARD       [DATE];
+	@name('Дата списания со счета плательщика')                             DATE_DEBET      [DATE];
+	@name('Дополнительные реквизиты бюджетного документа')                  BUD_REQS        [BUD_REQ];
+	@name('Дата поступления в банк плательщика')                            DATE_INP        [DATE];
+	@name('Автоматическая обработка')                                       AUTO_PROC       [BOOLEAN];
+	@name('Ключевание')                                                     KEY             [STRING];
+	@name('Вид валютной операции')                                          CURR_OPER       [CURR_OPERATI_REF];
+	@name('Номер счета Дт')                                                 NUM_DT          [ACCNUM];
+	@name('Номер счета Кт')                                                 NUM_KT          [ACCNUM];
+	@name('Исходный документ')                                              MAIN_SMART      [DOCUMENT_REF];
+	@name('Дата валютирования внешняя')                                     DATE_VAL_OUT    [DATE];
+	@name('Выдано кассиром')                                                KASS_OUT_USER   [USER_REF];
+	@name('Количество ПУД')                                                 NUMB_BASE_DOC   [NUM20];
+	@name('Количество листов в ПУД')                                        LIST_BASE_DOC   [NUM20];
+	@name('Представитель для первой подписи')                               REP_1ST_SIGN    [PERSONS_POS_REF];
+	@name('Дата приема распоряжения к исполнению')                          DATE_REC        [DATE_TIME];
+	@name('Код')                                                            CODE            [STRING_25];
+	@name('Разновидность документа')                                        DOC_KIND        [DOC_KINDS_REF];
+	@name('Штамп даты проводки')                                            PROV_TIMESTAMP  [TIMESTAMP];
+	@name('Резервное поле')                                                 RESERVE         [STRING_35];
+	@name('Назначение платежа кодовое')                                     NAZN_CODE       [STRING_35];
+}

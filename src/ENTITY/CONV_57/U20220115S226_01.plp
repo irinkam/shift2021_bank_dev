@@ -1,0 +1,141 @@
+-- Задание 3.  Освещается в лекциях Операции, Подготовка хранилища с доработкой и  Синтаксис языка. Выборки и курсоры
+class CONV_57;
+@name('S226. Заполнение справочника')
+static method U20220115S226_01 is
+	pragma include(::[RUNTIME].[MACRO_LIB]);
+	/*Для подготовки передачи изменений на схему банка создать операцию нормализации 
+	 * в ТБП «Обновления версии» (CONV_57), с коротким именем UYYYYMMDD_S##_NN 
+	 * (где S## – префикс студента, NN – номер вашей нормализации/конвертации по порядку), которая:
+	 * 
+	 * 1.Создаст 5 произвольных записей в справочнике «S##. Кредиты. Категория ссуды» 
+	 * со ссылками на различные виды кредита (в том числе - с незаполненной ссылкой);
+	 */
+	procedure Fill_Category(p_code 				S226_LOAN_CTGR.[CODE]%type
+						   ,p_name 				S226_LOAN_CTGR.[NAME]%type
+						   ,p_credit_kind		S226_LOAN_CTGR.[CREDIT_TYPE]%type
+						   ,p_coef				S226_LOAN_CTGR.[COEFFICIENT]%type) is
+		code_exist ref [S226_LOAN_CTGR];
+	begin
+		[CONV].[LOG].WriteMess('Начало выполнения процедуры Fill_Category');
+		select a(a)
+		in ::[S226_LOAN_CTGR]
+		where a.[CODE] = p_code
+		into code_exist;
+		
+		[CONV].[LOG].WriteMess('В справочнике ' || ::[S226_LOAN_CTGR]%classname || ' уже есть запись с кодом ' || p_code);
+		[CONV].[LOG].WriteMess('Окончание выполнения процедуры Fill_Category');
+	exception 
+		when NO_DATA_FOUND then
+			::[S226_LOAN_CTGR].[NEW_AUTO](P_CODE 			== p_code,
+											  P_NAME 			== name,
+											  P_CREDIT_TYPE 	== p_credit_kind,
+							   				  P_COEFFICIENT  	== p_coef);
+			[CONV].[LOG].WriteMess('В справочник ' || ::[S226_LOAN_CTGR]%classname || ' добавлена запись с кодом ' || p_code);
+			[CONV].[LOG].WriteMess('Окончание выполнения процедуры Fill_Category');
+		when TOO_MANY_ROWS then
+			[CONV].[LOG].WriteMess('В справочнике ' || ::[S226_LOAN_CTGR]%classname || ' найдено более одной записи
+										с кодом ' || p_code);
+			[CONV].[LOG].WriteMess('Окончание выполнения процедуры Fill_Category');
+		when others then
+			[CONV].[LOG].WriteMess('Необработанное исключение в операции ['||&METHOD$SNAME||'] '||&METHOD$NAME);
+			[CONV].[LOG].WriteMess('Окончание выполнения процедуры Fill_Category');
+	end;
+	/*2.По действующим кредитным договорам («Дата закрытия» = Пусто) проставит категорию 
+	 * из справочника «S##. Кредиты. Категория ссуды» по произвольному алгоритму, исходя из даты открытия КД. 
+	 * Проставлять категорию нужно только для «своих» кредитных договоров, 
+	 * для этого заведите вручную запись «S## Льготные кредиты» в справочнике «Тип проекта» (KIND_PROJECT)
+	 * и указывайте данный тип проекта при открытии договоров. 
+	 * При выполнении нормализации выбирайте КД только с данным типом проекта.
+	 */
+	-- функция вернет true, если у кредита уже есть категория
+	-- вернет false, если нет категории
+	function Is_Record_Exist(credit [PR_CRED_REF]) return boolean is
+		category_exist 		ref [S226_CRED_CATEG];
+	begin
+		select a(a)
+		in ::[S226_CRED_CATEG]all
+		where a.[CREDIT]%id = credit%id
+		into category_exist;
+		return true;
+	exception
+		when NO_DATA_FOUND then
+			return false;
+		when TOO_MANY_ROWS then
+			return false;
+		when others then
+			return false;
+	end;
+	
+	-- присвоение категории кредитам с пустой датой окончания
+	procedure Fill_Credit_Cat is
+		s226_prj_kind 	[KIND_PROJECT_REF];
+		op_date			date;
+		cred_cat		[S226_LOAN_CT_REF];
+	begin
+		[CONV].[LOG].WriteMess('Начало выполнения процедуры Fill_Credit_Cat');
+		-- находим дату ОД
+		op_date := ::[system].[op_date];
+		-- находим нужный тип проекта
+		locate s226_prj_kind in ::[KIND_PROJECT] where s226_prj_kind.[CODE] = 'S226_SOFT_LOANS';
+		for cred in [PR_CRED] 
+		where 	cred.[DATE_BEGIN] is not null 
+			and cred.[DATE_CLOSE] is null 
+			and cred.[PRJ_KIND_CRED] = s226_prj_kind
+		loop
+			-- по алгоритму высчитываем категорию и записываем в cred_cat
+			if cred.[DATE_BEGIN] = op_date then
+				locate cred_cat in ::[S226_LOAN_CTGR] where cred_cat.[CODE] = '1';
+			elsif cred.[DATE_BEGIN] < op_date and cred.[DATE_BEGIN] >= op_date - 30 then
+				locate cred_cat in ::[S226_LOAN_CTGR] where cred_cat.[CODE] = '2';
+			elsif cred.[DATE_BEGIN] < op_date - 30 and cred.[DATE_BEGIN] >= op_date - 60 then
+				locate cred_cat in ::[S226_LOAN_CTGR] where cred_cat.[CODE] = '3';
+			elsif cred.[DATE_BEGIN] < op_date - 60 and cred.[DATE_BEGIN] >= op_date - 90 then
+				locate cred_cat in ::[S226_LOAN_CTGR] where cred_cat.[CODE] = '4';
+			else
+				locate cred_cat in ::[S226_LOAN_CTGR] where cred_cat.[CODE] = '5';
+			end if;
+			-- проверяем, есть ли у нас категория по даннному кредиту
+			if Is_Record_Exist(cred)= true then
+				-- запишем в лог, что запись уже существует	
+				[CONV].[LOG].WriteMess('В справочнике ' || ::[S226_CRED_CATEG]%classname || ' уже есть категория по кредитному договору № ' || cred.[NUM_DOG]);
+			else
+				-- если у кредита еще нет категории, зададим её
+				::[S226_CRED_CATEG].[NEW_AUTO](P_CREDIT 		== cred,
+											P_DATE_BEG 		== cred.[DATE_BEGIN],
+											P_DATE_END	 	== null,
+						   					P_CRED_CAT  	== cred_cat);
+				[CONV].[LOG].WriteMess('В справочник ' || ::[S226_CRED_CATEG]%classname || ' была добавлена категория по кредитному договору № ' || cred.[NUM_DOG]);
+			end if;
+		end loop;
+		[CONV].[LOG].WriteMess('Окончание выполнения процедуры Fill_Credit_Cat');
+	end;
+	
+	U20220115S226_01
+	 	is
+		execute is
+			credit_type1 [KIND_CREDITS_REF];
+			credit_type2 [KIND_CREDITS_REF];
+		begin
+			[CONV].[LOG].InitLog(&METHOD$SNAME||'_mess.log',true);
+			[CONV].[LOG].WriteMess('Начало выполнения операции ['||&METHOD$SNAME||'] '||&METHOD$NAME);
+		
+		-- находим тип кредита №1
+		locate credit_type1 in ::[KIND_CREDITS] where credit_type1.[CODE] = '10_1' and rownum = 1;
+			-- заполнение справочника категорий с типом кредита №1
+			Fill_Category(01, 'Стандартная', credit_type1, 1);
+			Fill_Category(02, 'Льготная 20%', credit_type1, 0.2);
+		
+		-- находим тип кредита №2
+		locate credit_type2 in ::[KIND_CREDITS] where credit_type2.[CODE] = '01' and rownum = 1;
+			-- заполнение справочника категорий с типом кредита №1
+			Fill_Category(03, 'Льготная 40%', credit_type2, 0.4);
+			-- заполнение справочника категорий с пустым типом кредита
+			Fill_Category(04, 'VIP', null, 0.1);
+			Fill_Category(05, 'Штрафная', null, 1.5);
+			-- присвоение категории кредитам
+			Fill_Credit_Cat();
+			[CONV].[LOG].WriteMess('Окончание выполнения операции ['||&METHOD$SNAME||'] '||&METHOD$NAME);
+			[CONV].[LOG].InitLog;
+		end;
+	end;
+end; /* конeц static method U20220115S226_01 */

@@ -1,0 +1,6 @@
+class S226_LOAN_CTGR;
+
+@name('Удалить')
+@tag('CREATED')
+destructor DELETE_AUTO is
+end;

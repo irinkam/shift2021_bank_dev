@@ -1,0 +1,61 @@
+class PR_CRED;
+@name('S226. Определение льготного коэффициента') /* Свойство операции "Наименование" */
+static method S226_LOAN_COEFF is
+
+	S226_LOAN_COEFF (
+		@name('Код') 							P_CODE 		in [STRING_50],
+		@name('Документ')						P_DOC		in [DOCUMENT_REF],
+		@name('Продукт')						P_PROD		in [A_PROD_REF],
+		@name('Дополнительные параметры')		P_ADD_PAR	in [STRING_32000]
+	) return [MEMO]
+	is
+	
+	/*Операция должна выполнять следующее:
+	•	Если значение параметра P_CODE = ‘S##_ЛЬГОТ_КОЭФ’, то необходимо:
+		o Определить дату расчета. Для этого необходимо определить значение 
+		* доппараметра DATE_OP из строки дополнительных параметров P_ADD_PAR.
+		* Если значение – пусто, то в качестве даты расчета берется дата ОД
+		o Найти записи в справочнике «S##. Кредиты. Принадлежность к категории» 
+		* по данному КД (который передается через параметр P_PROD) 
+		* на дату расчета (определенную выше).
+		Если такая запись есть, то из операции возвращается 
+		* значение коэффициента для категории ссуды из этой записи.
+		
+		* Во всех остальных случаях возвращается строка ‘EMPTY’
+	 */
+			
+		execute is
+		date_calc 			[DATE];
+		category_coeff		number;
+		begin
+			if P_CODE = 'S226_ЛЬГОТ_КОЭФ' then
+				-- если не нашли дату ОД в доп параметрах, берем дату ОД филиала
+				date_calc := nvl(
+								STR.GET_DATE_PAR(P_ADD_PAR,'DATE_OP'), 
+								P_PROD.[FILIAL].[OP_DATE]
+								);
+				-- найдем коэффициент 				
+				select a(a.[CRED_CAT].[COEFFICIENT])
+				in ::[S226_CRED_CATEG]all
+				where a.[CREDIT]%id = P_PROD%id
+				and a.[DATE_BEG] <= date_calc 
+					and (date_calc <= a.[DATE_END] or a.[DATE_END] is null)
+				into category_coeff;
+				
+				return category_coeff;
+				
+			else
+				return 'EMPTY';
+			end if;
+			
+			exception
+			-- вернем коэффициент по умолчанию, если возникло исключение
+			when NO_DATA_FOUND then			
+				return '1';
+			when TOO_MANY_ROWS then
+				return '1';
+			when others then
+				return '1';
+		end;
+	end;
+end; /* конeц static method S226_LOAN_COEFF */

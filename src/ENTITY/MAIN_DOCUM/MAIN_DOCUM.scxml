@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:platform="http://www.cft.ru/platform-platform-ide-scxml" version="1.0" initial="FORM" platform:classId="MAIN_DOCUM" platform:runtransition="static">
+  <state id="TAKE_BY_KASSIR" platform:name="Принят кассиром" platform:useindex="true">
+    <transition event="TAKE_BY_KASSIR.PRO" target="PRO" platform:id="TAKEKASSIR_PRO" platform:name="Принят кассиром -&gt; Проконтролировать" platform:position="98"/>
+    <transition event="TAKE_BY_KASSIR.VOZV" target="VOZV" platform:id="TAKE_KASSIR_VOZV" platform:name="Принят кассиром - На возврат" platform:position="103">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TAKE_BY_KASSIR.PROV" target="PROV" platform:id="PROV_BY_KASSIR" platform:name="Принят кассиром -&gt; Проведен" platform:position="105">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="TAKE_BY_KASSIR.PROV" target="PROV" platform:id="PROV_DT_KT" platform:name="Принят кассиром-&gt;Проведен" platform:position="113">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="TAKE_BY_KASSIR.WAIT_PROV" target="WAIT_PROV" platform:id="TAKE_WAITPROV" platform:name="Принят кассиром -&gt; Ожидает проводки" platform:position="124">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="TAKE_BY_KASSIR.WAIT_PROV" target="WAIT_PROV" platform:id="TAKE_WAITPROVOUT" platform:name="Принят кассиром -&gt; Ожидает проводки с выходом в Дб/Кт" platform:position="186">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+    <transition event="TAKE_BY_KASSIR.ISNULL" target="ISNULL" platform:id="TK_KAS_TO_ISNUL" platform:name="Принят кассиром -&gt; Анулирован" platform:position="191"/>
+    <transition event="TAKE_BY_KASSIR.TO_MBR" target="TO_MBR" platform:id="TAKE_KASS_TO_RC" platform:name="Принят кассиром -&gt; В РЦ" platform:position="201"/>
+    <transition event="TAKE_BY_KASSIR.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="KASSIR_P_BK_DTCR" platform:name="Принят кассиром -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="231">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+    <transition event="TAKE_BY_KASSIR.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="KASSIR_P_BK" platform:name="Принят кассиром -&gt; Проведен в банке" platform:position="245">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+  </state>
+  <state id="AUX_CTRL" platform:name="Дополнительный контроль" platform:useindex="true">
+    <transition event="AUX_CTRL.VOZV" target="VOZV" platform:id="RETURN_AUX_CTRL" platform:name="Доп. контроль -&gt; На возврат" platform:position="214"/>
+    <transition event="AUX_CTRL.FORM" target="FORM" platform:id="AUX_CTRL_FORM" platform:name="Доп. контроль -&gt; Не обработан" platform:position="237"/>
+    <transition event="AUX_CTRL.TO_MBR" target="TO_MBR" platform:id="AUX_CTRL_TRC" platform:name="Доп. контроль -&gt; В РЦ" platform:position="247"/>
+    <transition event="AUX_CTRL.PODTV" target="PODTV" platform:id="AUX_CTRL_PODTV" platform:name="Доп. контроль -&gt; На подтверждение" platform:position="250">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="AUX_CTRL.PRO" target="PRO" platform:id="AUX_CTRL_PRO" platform:name="Доп. контроль -&gt; Проконтролировать" platform:position="251">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="AUX_CTRL.PROV" target="PROV" platform:id="AUX_CTRL_PROVRED" platform:name="Доп. контроль -&gt; Проведен (в красное)" platform:position="252">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="AUX_CTRL.PROV" target="PROV" platform:id="AUX_CTRL_PROV" platform:name="Доп. контроль -&gt; Проведен" platform:position="253">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="AUX_CTRL.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="AUX_CTRL_PR_BNKR" platform:name="Доп. контроль -&gt; Проведен в банке (в красное)" platform:position="254">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+    <transition event="AUX_CTRL.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="AUX_CTRL_PR_BANK" platform:name="Доп. контроль -&gt; Проведен в банке" platform:position="255">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="AUX_CTRL.TO_DEP" target="TO_DEP" platform:id="AUX_CTRL_TO_DEP" platform:name="Доп. контроль -&gt; К бухгалтеру по депозитам" platform:position="256"/>
+    <transition event="AUX_CTRL.TO_KASSA" target="TO_KASSA" platform:id="AUX_CTRL_TO_KASS" platform:name="Доп. контроль -&gt; В кассу" platform:position="257">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="FORM_TO_KS_ACT"/>
+    </transition>
+    <transition event="AUX_CTRL.TO_KRED" target="TO_KRED" platform:id="AUX_CTRL_TO_KRED" platform:name="Доп. контроль -&gt; К бухгалтеру по кредитам" platform:position="258">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="AUX_CTRL.TO_OCB" target="TO_OCB" platform:id="AUX_CTRL_TO_OCB" platform:name="Доп. контроль -&gt; В ОЦБ" platform:position="259"/>
+    <transition event="AUX_CTRL.TO_RKO" target="TO_RKO" platform:id="AUX_CTRL_TO_RKO" platform:name="Доп. контроль -&gt; В РКО" platform:position="260">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="AUX_CTRL.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="AUX_CTRL_RKO_CUR" platform:name="Доп. контроль -&gt; На валютный контроль" platform:position="261">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="AUX_CTRL.WAIT_PROV" target="WAIT_PROV" platform:id="AUX_CTRL_WPROV_R" platform:name="Доп. контроль -&gt; Ожидает проводки (в красное)" platform:position="262">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+    <transition event="AUX_CTRL.WAIT_PROV" target="WAIT_PROV" platform:id="AUX_CTRL_W_PROV" platform:name="Доп. контроль -&gt; Ожидает проводки" platform:position="263">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="AUX_CTRL.TO_KRED_INSP" target="TO_KRED_INSP" platform:id="AUX_CTRL_KRED_IN" platform:name="Доп. контроль -&gt; К кредитному инспектору" platform:position="264"/>
+  </state>
+  <state id="TO_MBR" platform:name="В РЦ" platform:useindex="true">
+    <transition event="TO_MBR.PROV" target="PROV" platform:id="P1297374" platform:name="В РЦ -&gt; Проведен" platform:position="16">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="TO_MBR.PROV" target="PROV" platform:id="TO_PRV_DTKT_OUT" platform:name="В РЦ -&gt; Проведен под красное" platform:position="47">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="TO_MBR.VOZV" target="VOZV" platform:id="TO_VOZV_TRC" platform:name="В РЦ -&gt; На возврат" platform:position="60">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TO_MBR.FORM" target="FORM" platform:id="TRC_FORM" platform:name="В РЦ -&gt; Не обработан" platform:position="70"/>
+    <transition event="TO_MBR.TO_KRED" target="TO_KRED" platform:id="TRC_KRED" platform:name="В РЦ -&gt; К бухгалтеру по кредитам" platform:position="85"/>
+    <transition event="TO_MBR.PODTV" target="PODTV" platform:id="TO_MBR_2982" platform:name="В РЦ -&gt; На подтверждение" platform:position="99" platform:tag="TRC"/>
+    <transition event="TO_MBR.TO_OCB" target="TO_OCB" platform:id="TO_MBR_OCB" platform:name="В РЦ -&gt; В ОЦБ" platform:position="107"/>
+    <transition event="TO_MBR.TO_DEP" target="TO_DEP" platform:id="RZ_TO_DEPOZ" platform:name="Из РЦ -&gt; К бухгалтеру по депозитам" platform:position="143"/>
+    <transition event="TO_MBR.WAIT_DVALUT" target="WAIT_DVALUT" platform:id="TO_MBR_WAIT_DVAL" platform:name="В РЦ -&gt; Ожидает валютирования" platform:position="169"/>
+    <transition event="TO_MBR.WAIT_PROV" target="WAIT_PROV" platform:id="TO_MBR_WAIT_PROV" platform:name="В РЦ -&gt; Ожидает проводки" platform:position="173">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="TO_MBR.TO_HOZ_DOG" target="TO_HOZ_DOG" platform:id="MBR_TO_HOZ_DOG" platform:name="В РЦ -&gt; К бухгалтеру по хоз. договорам" platform:position="173"/>
+    <transition event="TO_MBR.WAIT_PROV" target="WAIT_PROV" platform:id="MBR_WAITPROVOT" platform:name="В РЦ -&gt; Ожидает проводки с выходом в Дб/Кт" platform:position="187">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+    <transition event="TO_MBR.PAY" target="PAY" platform:id="TO_MBR_PAY" platform:name="В РЦ -&gt; Оплачен" platform:position="193" platform:manual="true">
+      <platform:action method="TO_PAY"/>
+    </transition>
+    <transition event="TO_MBR.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="MBR_TO_RKO_CUR" platform:name="В РЦ -&gt; На валютный контроль" platform:position="197"/>
+    <transition event="TO_MBR.TO_KASSA" target="TO_KASSA" platform:id="RC_TO_KASSA" platform:name="В РЦ -&gt; В кассу" platform:position="200"/>
+    <transition event="TO_MBR.SENDED" target="SENDED" platform:id="TO_MBR_SENDED" platform:name="В РЦ -&gt; Отправлен" platform:position="204"/>
+    <transition event="TO_MBR.TO_KART" target="TO_KART" platform:id="MBR_TO_KART" platform:name="В РЦ -&gt; В картотеке" platform:position="208"/>
+    <transition event="TO_MBR.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="TRC_PROV_BANK" platform:name="В РЦ -&gt; Проведен в банке" platform:position="224">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="TO_MBR.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="TRC_P_BANK_DT_CR" platform:name="В РЦ -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="236">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+    <transition event="TO_MBR.AUX_CTRL" target="AUX_CTRL" platform:id="TRC_AUX_CTRL" platform:name="В РЦ -&gt; Доп. контроль" platform:position="247"/>
+  </state>
+  <state id="PAY" platform:name="Оплачен" platform:useindex="true">
+    <transition event="PAY.TO_KART" target="TO_KART" platform:id="BACK_TO_KART" platform:name="Оплачен -&gt; В картотеке" platform:position="43"/>
+    <transition event="PAY.TO_KRED" target="TO_KRED" platform:id="OPL_KRED" platform:name="Оплачен -&gt; К бухгалтеру по кредитам" platform:position="72"/>
+    <transition event="PAY.TO_OCB" target="TO_OCB" platform:id="PAY_TO_OCB" platform:name="Оплачен -&gt; В ОЦБ" platform:position="106"/>
+    <transition event="PAY.FORM" target="FORM" platform:id="PAY_TO_FORM" platform:name="Оплачен -&gt; Не обработан" platform:position="156"/>
+    <transition event="PAY.WAIT_PROV" target="WAIT_PROV" platform:id="PAY_WAIT_PROV" platform:name="Оплачен-&gt; Ожидает проводки" platform:position="164">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="PAY.WAIT_PROV" target="WAIT_PROV" platform:id="PAY_WAIT_PROVOUT" platform:name="Оплачен -&gt; Ожидает проводки с выходом в Дб/Кт" platform:position="183">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+  </state>
+  <state id="DELETED" platform:name="Ликвидирован" platform:useindex="true">
+    <transition event="DELETED.PROV" target="PROV" platform:id="FROM_DEL_WITH_DT" platform:name="Ликвидирован -&gt; Проведен под красное" platform:position="42">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="DELETED.TO_KRED" target="TO_KRED" platform:id="DEL_TO_KRED" platform:name="Ликвидирован -&gt; К бухгалтеру по кредитам" platform:position="74"/>
+    <transition event="DELETED.TO_RETURN" target="TO_RETURN" platform:id="DEL_TO_RETURN" platform:name="Ликвидирован -&gt; Возвратить клиенту" platform:position="100">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="DELETED.FORM" target="FORM" platform:id="DEL_FORM" platform:name="Ликвидирован -&gt; Не обработан" platform:position="102">
+      <platform:action method="DEL_TO_FORM"/>
+    </transition>
+    <transition event="DELETED.TO_MBR" target="TO_MBR" platform:id="DEL_TO_MBR" platform:name="Ликвидирован -&gt; В РЦ" platform:position="123"/>
+    <transition event="DELETED.VOZV" target="VOZV" platform:id="LIKV_TO_VOZVR" platform:name="Ликвидирован -&gt; На возврат" platform:position="129">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+  </state>
+  <state id="PRO" platform:name="Проконтролировать" platform:tag="EDU" platform:useindex="true">
+    <transition event="PRO.VOZV" target="VOZV" platform:id="TOVOZV" platform:name="Проконтролировать -&gt; На возврат" platform:position="56">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="PRO.PROV" target="PROV" platform:id="TO_PROV_PRO" platform:name="Проконтролировать -&gt; Проведен" platform:position="57">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="PRO.PROV" target="PROV" platform:id="TO_ROV_PRO_DT_KT" platform:name="Проконтролировать -&gt; Проведен под красное" platform:position="57">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="PRO.TO_MBR" target="TO_MBR" platform:id="TO_MBR_PRO" platform:name="Проконтролировать -&gt; В РЦ" platform:position="58">
+      <platform:action method="TO_MBR_TRANS"/>
+    </transition>
+    <transition event="PRO.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="PRO_TO_CUR" platform:name="Проконтролировать -&gt; На валютный контроль" platform:position="63">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="PRO.TO_KRED" target="TO_KRED" platform:id="CONTR_CRED" platform:name="Проконтролировать -&gt; К бухгалтеру по кредитам" platform:position="69">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="PRO.TO_RKO_CUR_SPEC" target="TO_RKO_CUR_SPEC" platform:id="TO_RKO_SPEC_PRO" platform:name="Проконтролировать -&gt; На валютный спец.контроль" platform:position="72">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="PRO.PAY" target="PAY" platform:id="PROKON_OPL" platform:name="Проконтролировать -&gt; Оплачен" platform:position="77">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PAY"/>
+    </transition>
+    <transition event="PRO.TO_KASSA" target="TO_KASSA" platform:id="PRO_TOKASSA" platform:name="Проконтролировать -&gt; В кассу" platform:position="99">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="FORM_TO_KS_ACT"/>
+    </transition>
+    <transition event="PRO.WAIT_PROV" target="WAIT_PROV" platform:id="CONTR_WAITPROV" platform:name="Проконтролировать -&gt; Ожидает проводки" platform:position="121">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="PRO.WAIT_PROV" target="WAIT_PROV" platform:id="PRO_WAITPROVOUT" platform:name="Проконтролировать -&gt; Ожидает проводки с выходом в Дб/Кт" platform:position="185">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+    <transition event="PRO.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="PRO_PROV_BANK" platform:name="Проконтролировать -&gt; Проведен в банке" platform:position="218">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="PRO.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="PRO_P_BANK_DTCR" platform:name="Проконтролировать -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="230">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="PROV" platform:name="Проведен" platform:useindex="false">
+    <transition event="PROV.DELETED" target="DELETED" platform:id="PROV_DELETED" platform:name="Проведен -&gt; Ликвидирован" platform:position="26">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="DEL_DEBCR_OUT"/>
+    </transition>
+    <transition event="PROV.DELETED" target="DELETED" platform:id="PROV_DEL" platform:name="Проведен-&gt;Ликвидирован" platform:position="157">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="DEL_NOWORK"/>
+    </transition>
+    <transition event="PROV.PROV" target="PROV" platform:id="PROV_PROV" platform:name="Проведен-Проведен(Редактирование проводки)" platform:position="193">
+      <platform:action method="TR_EDIT_PROV"/>
+    </transition>
+  </state>
+  <state id="TO_KASSA" platform:name="В кассу" platform:useindex="true">
+    <transition event="TO_KASSA.PROV" target="PROV" platform:id="KASSA_PROV_RED" platform:name="В кассу -&gt; Проведен под красное" platform:position="102">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="TO_KASSA.TAKE_BY_KASSIR" target="TAKE_BY_KASSIR" platform:id="TAKE_BY_KASSIR" platform:name="В кассу -&gt; Принят кассиром" platform:position="104">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_KASSA.VOZV" target="VOZV" platform:id="TO_VOZVR" platform:name="В кассу -&gt; На возврат" platform:position="106">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TO_KASSA.PROV" target="PROV" platform:id="PROV_FROM_KASSA" platform:name="В кассу -&gt; Проведен" platform:position="108">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="TO_KASSA.TO_MBR" target="TO_MBR" platform:id="KASS_TO_RC" platform:name="В кассу -&gt; В РЦ" platform:position="202"/>
+    <transition event="TO_KASSA.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="KASSA_PROV_BANK" platform:name="В кассу -&gt; Проведен в банке" platform:position="222">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="TO_KASSA.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="KASSA_P_BNK_DTCR" platform:name="В кассу -&gt; Проведен в банке c выходом в Дт/Кт" platform:position="234">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="TO_RKO_CUR_SPEC" platform:name="На валютный спец.контроль" platform:useindex="true">
+    <transition event="TO_RKO_CUR_SPEC.TO_MBR" target="TO_MBR" platform:id="TO_MBR_RKO_SPEC" platform:name="На валютный спец.контроль -&gt; В РЦ" platform:position="71">
+      <platform:action method="TO_MBR_TRANS"/>
+    </transition>
+    <transition event="TO_RKO_CUR_SPEC.PROV" target="PROV" platform:id="TO_PRO_RKO_SPEC" platform:name="На валютный спец.контроль -&gt; Проведен" platform:position="71">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="TO_RKO_CUR_SPEC.TO_KRED" target="TO_KRED" platform:id="TO_KRED_SPEC" platform:name="На валютный спец.контроль -&gt; К бухгалтеру по кредитам" platform:position="74">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO_CUR_SPEC.PROV" target="PROV" platform:id="TO_PROV_DTKT_SPE" platform:name="На валютный спец.контроль -&gt; Проведен под красное" platform:position="76">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="TO_RKO_CUR_SPEC.VOZV" target="VOZV" platform:id="SPEC_TO_VOZV" platform:name="На валютный спец.контроль -&gt; На возврат" platform:position="80">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TO_RKO_CUR_SPEC.PODTV" target="PODTV" platform:id="TR_CONFIRM" platform:name="На валютный спец.контроль -&gt; На подтверждение" platform:position="101">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO_CUR_SPEC.TO_KASSA" target="TO_KASSA" platform:id="SPEC_TO_KASSA" platform:name="На валютный спец.контроль -&gt; В кассу" platform:position="154">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="FORM_TO_KS_ACT"/>
+    </transition>
+    <transition event="TO_RKO_CUR_SPEC.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="SPEC_CUR_PROV_BN" platform:name="На валютный спец.контроль -&gt; Проведен в банке" platform:position="226">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="TO_RKO_CUR_SPEC.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="S_CUR_P_BNK_DTCR" platform:name="На валютный спец. контроль -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="238">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="ON_DISTR" platform:name="На распределении" platform:useindex="true">
+    <transition event="ON_DISTR.PAY" target="PAY" platform:id="ON_DISTR_TO_OPL" platform:name="На распределении -&gt; Оплачен" platform:position="64">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PAY"/>
+    </transition>
+    <transition event="ON_DISTR.TO_KRED" target="TO_KRED" platform:id="ON_DISTR_TO_CRED" platform:name="На распределении -&gt; К бухгалтеру по кредитам" platform:position="65">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+  </state>
+  <state id="TO_RKO_CUR" platform:name="На валютный контроль" platform:useindex="true">
+    <transition event="TO_RKO_CUR.PROV" target="PROV" platform:id="FROM_RKO_CUR" platform:name="На валютный контроль -&gt; Проведен" platform:position="29">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="TO_RKO_CUR.PROV" target="PROV" platform:id="FROM_CUR" platform:name="На валютный контроль -&gt; Проведен под красное" platform:position="37">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="TO_RKO_CUR.TO_MBR" target="TO_MBR" platform:id="TO_TRC_FROM_CONT" platform:name="На валютный контроль -&gt; В РЦ" platform:position="64">
+      <platform:action method="TO_MBR_TRANS"/>
+    </transition>
+    <transition event="TO_RKO_CUR.VOZV" target="VOZV" platform:id="SPEC_VOZV" platform:name="На валютный контроль -&gt; На возврат" platform:position="72">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TO_RKO_CUR.TO_KRED" target="TO_KRED" platform:id="VAL_CRED" platform:name="На валютный контроль -&gt; К бухгалтеру по кредитам" platform:position="79">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO_CUR.PRO" target="PRO" platform:id="TR_VAL_CONTR_PRO" platform:name="На валютный контроль -&gt; Проконтролировать" platform:position="93">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO_CUR.TO_KASSA" target="TO_KASSA" platform:id="RKOCUR_TOKASSA" platform:name="На валютный контроль -&gt; В кассу" platform:position="101">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="FORM_TO_KS_ACT"/>
+    </transition>
+    <transition event="TO_RKO_CUR.WAIT_PROV" target="WAIT_PROV" platform:id="VAL_WAITPROV" platform:name="На валютный контроль -&gt; Ожидает проводки" platform:position="123">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="TO_RKO_CUR.TO_RKO" target="TO_RKO" platform:id="VAL_RKO" platform:name="На валютный контроль -&gt; В РКО" platform:position="133">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO_CUR.PODTV" target="PODTV" platform:id="VAL_PODTV" platform:name="На валютный контроль-&gt;На подтверждение" platform:position="141">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO_CUR.TO_DEP" target="TO_DEP" platform:id="TO_VAL_TO_DEP" platform:name="Валютный контроль - Бухгалтер по депозитам" platform:position="176"/>
+    <transition event="TO_RKO_CUR.TO_OCB" target="TO_OCB" platform:id="VAL_TO_OCB" platform:name="На валютный контроль-&gt;В ОЦБ" platform:position="177"/>
+    <transition event="TO_RKO_CUR.WAIT_PROV" target="WAIT_PROV" platform:id="VAL_WAITPROVOUT" platform:name="На валютный контроль -&gt; Ожидает проводки с выходом в Дб/Кт" platform:position="188">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+    <transition event="TO_RKO_CUR.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="RKO_CUR_PROV_BNK" platform:name="На валютный контроль -&gt; Проведен в банке" platform:position="225">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="TO_RKO_CUR.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="RKO_CUR_P_B_DTCR" platform:name="На валютный контроль -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="237">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="PROV_IN_BANK" platform:name="Проведен в банке" platform:useindex="true">
+    <transition event="PROV_IN_BANK.DELETED" target="DELETED" platform:id="PROV_BANK_DEL" platform:name="Проведен в банке -&gt; Ликвидирован" platform:position="215">
+      <platform:action method="DEL_NOWORK"/>
+    </transition>
+    <transition event="PROV_IN_BANK.DELETED" target="DELETED" platform:id="PROV_BANK_DEL_C" platform:name="Проведен в банке -&gt; Ликвидирован" platform:position="216">
+      <platform:action method="DEL_DEBCR_OUT"/>
+    </transition>
+  </state>
+  <state id="INPUT_BY_OPER" platform:name="Введен операционистом" platform:useindex="true">
+    <transition event="INPUT_BY_OPER.FORM" target="FORM" platform:id="INPUT_FORM" platform:name="Введен операционистом -&gt; Не обработан" platform:position="98"/>
+  </state>
+  <state id="VOZV" platform:name="На возврат" platform:useindex="true">
+    <transition event="VOZV.FORM" target="FORM" platform:id="VOZV" platform:name="На возврат -&gt; Не обработан" platform:position="4">
+      <platform:action method="TO_FORM_ACT"/>
+    </transition>
+    <transition event="VOZV.TO_RETURN" target="TO_RETURN" platform:id="VOZV_TOCLIENT" platform:name="На возврат-Возвратить клиенту" platform:position="127"/>
+  </state>
+  <state id="REGISTER" platform:name="Реестр инкассо" platform:useindex="true"/>
+  <state id="TO_KART" platform:name="В картотеке" platform:useindex="true">
+    <transition event="TO_KART.PAY" target="PAY" platform:id="1297363" platform:name="В картотеке -&gt; Оплачен" platform:position="5"/>
+    <transition event="TO_KART.ISNULL" target="ISNULL" platform:id="1297376" platform:name="В картотеке -&gt; Аннулирован" platform:position="18"/>
+    <transition event="TO_KART.TO_KART" target="TO_KART" platform:id="FROM_CARD" platform:name="В картотеке -&gt; В картотеке" platform:position="30"/>
+    <transition event="TO_KART.FORM" target="FORM" platform:id="KART_2981" platform:name="В картотеке -&gt; Не обработан" platform:position="87"/>
+  </state>
+  <state id="FORM" platform:name="Не обработан" platform:useindex="true">
+    <transition event="FORM.PROV" target="PROV" platform:id="P1297359" platform:name="Не обработан -&gt; Проведен" platform:position="0">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="FORM.PODTV" target="PODTV" platform:id="P_CONFIRM" platform:name="Не обработан -&gt; На подтверждение" platform:position="1">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="FORM.TO_KART" target="TO_KART" platform:id="IN_CARD_INDEX" platform:name="Не обработан -&gt; В картотеке" platform:position="8">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="FORM.TO_KART" target="TO_KART" platform:id="1297367" platform:name="Не обработан -&gt; В картотеке" platform:position="8"/>
+    <transition event="FORM.TO_KRED" target="TO_KRED" platform:id="CREDIT_ACCT" platform:name="Не обработан -&gt; К бухгалтеру по кредитам" platform:position="9">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="FORM.TO_KRED" target="TO_KRED" platform:id="1297365" platform:name="Не обработан -&gt; К бухгалтеру по кредитам" platform:position="9"/>
+    <transition event="FORM.TO_RKO" target="TO_RKO" platform:id="FORM_TO_RKO" platform:name="Не обработан -&gt; В РКО" platform:position="10">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="FORM.TO_MBR" target="TO_MBR" platform:id="P1297369" platform:name="Не обработан -&gt; В РЦ" platform:position="11">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_MBR_TRANS"/>
+    </transition>
+    <transition event="FORM.PROV" target="PROV" platform:id="P1297378" platform:name="Не обработан -&gt; Проведен под красное" platform:position="19">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="FORM.INPUT_BY_OPER" target="INPUT_BY_OPER" platform:id="1297379" platform:name="Не обработан -&gt; Введен операционистом" platform:position="20"/>
+    <transition event="FORM.WAIT_DVALUT" target="WAIT_DVALUT" platform:id="TO_WAIT" platform:name="Не обработан -&gt; Ожидает валютирования" platform:position="31">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="FORM.TO_RKO_CUR_SPEC" target="TO_RKO_CUR_SPEC" platform:id="TO_CPEC" platform:name="Не обработан -&gt; На валютный спец.контроль" platform:position="51">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="FORM.TO_RETURN" target="TO_RETURN" platform:id="P1297400" platform:name="Не обработан -&gt; Возвратить клиенту" platform:position="52">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="FORM.PRO" target="PRO" platform:id="TO_PRO" platform:name="Не обработан -&gt; Проконтролировать" platform:position="54">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="FORM.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="NEOBR_VALCONT" platform:name="Не обработан -&gt; На валютный контроль" platform:position="78">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="FORM.TO_KASSA" target="TO_KASSA" platform:id="FORM_TO_KASSA" platform:name="Не обработан -&gt; В кассу" platform:position="103" platform:manual="true">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="FORM_TO_KS_ACT"/>
+    </transition>
+    <transition event="FORM.REGISTER" target="REGISTER" platform:id="TO_REESTR" platform:name="Не обработан -&gt; Реестр инкассо" platform:position="104"/>
+    <transition event="FORM.TO_OCB" target="TO_OCB" platform:id="FORM_TO_OCB" platform:name="Не обработан -&gt; В ОЦБ" platform:position="105" platform:manual="true"/>
+    <transition event="FORM.PROV" target="PROV" platform:id="FORM_PROV_PRIV" platform:name="Не обработан -&gt; Проведен (служебный)" platform:position="112">
+      <platform:action method="ZAG"/>
+    </transition>
+    <transition event="FORM.WAIT_PROV" target="WAIT_PROV" platform:id="FORM_WAIT_PROV" platform:name="Не обработан -&gt; Ожидает проводки" platform:position="119">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="FORM.TO_KRED_INSP" target="TO_KRED_INSP" platform:id="FORM_TO_KRED_INS" platform:name="Не обработан -&gt; Кредитному инспектору" platform:position="123"/>
+    <transition event="FORM.TAKE_BY_KASSIR" target="TAKE_BY_KASSIR" platform:id="TO_TAKE_BY_KASS" platform:name="Не обработан -&gt; Принят кассиром" platform:position="137">
+      <platform:action method="FORM_TO_TAKE_BY"/>
+    </transition>
+    <transition event="FORM.TO_DEP" target="TO_DEP" platform:id="FROM_TO_DEP" platform:name="Не обработан -&gt; К бухгалтеру по депозитам" platform:position="147"/>
+    <transition event="FORM.TO_HOZ_DOG" target="TO_HOZ_DOG" platform:id="FORM_TO_HOZ_DOG" platform:name="Не обработан -&gt; К бухгатеру по хоз. договорам" platform:position="168"/>
+    <transition event="FORM.PODTV" target="PODTV" platform:id="RBO_PODTV_FORM" platform:name="Необработан-На подтверждение через ZAG" platform:position="178" platform:tag="RBO">
+      <platform:action method="ZAG"/>
+    </transition>
+    <transition event="FORM.WAIT_PROV" target="WAIT_PROV" platform:id="FORM_WAITPROVOUT" platform:name="Не обработан -&gt; Ожидает проводки с выходом в Дб/Кт" platform:position="182">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+    <transition event="FORM.PAY" target="PAY" platform:id="FORM_PAY" platform:name="Не обработан -&gt; Оплачен" platform:position="206"/>
+    <transition event="FORM.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="FORM_PROV_BANK" platform:name="Не обработан -&gt; Проведен в банке" platform:position="210">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="FORM.AUX_CTRL" target="AUX_CTRL" platform:id="TO_AUX_CTRL" platform:name="Не обработан -&gt; Доп. контроль" platform:position="213"/>
+    <transition event="FORM.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="FROM_P_BANK_DTCR" platform:name="Не обработан -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="228">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="TO_KRED_INSP" platform:name="К кредитному инспектору" platform:useindex="true">
+    <transition event="TO_KRED_INSP.FORM" target="FORM" platform:id="KRED_INS_TO_FORM" platform:name="Кредитному инспектору -&gt; Не обработан" platform:position="124"/>
+    <transition event="TO_KRED_INSP.TO_KRED" target="TO_KRED" platform:id="INSP_TO_KRED" platform:name="Кредитному бухгалтеру от инспектора" platform:position="125"/>
+    <transition event="TO_KRED_INSP.PODTV" target="PODTV" platform:id="KRED_INSP_PODTV" platform:name="К кредитному инспектору -&gt; На подтверждение" platform:position="129"/>
+    <transition event="TO_KRED_INSP.TO_KASSA" target="TO_KASSA" platform:id="KRED_INSP_KASSA" platform:name="К кредитному инспектору -&gt; В кассу" platform:position="130"/>
+  </state>
+  <state id="PODTV" platform:name="На подтверждение" platform:useindex="true">
+    <transition event="PODTV.PROV" target="PROV" platform:id="P1297377" platform:name="На подтверждение -&gt; Проведен" platform:position="2">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="PODTV.VOZV" target="VOZV" platform:id="P_REJECT" platform:name="На подтверждение -&gt; На возврат" platform:position="3">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="PODTV.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="FROM_TO_CUR" platform:name="На подтверждение -&gt; На валютный контроль" platform:position="39">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="PODTV.PROV" target="PROV" platform:id="TO_PROV_DT" platform:name="На подтверждение -&gt; Проведен под красное" platform:position="40">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="PODTV.TO_MBR" target="TO_MBR" platform:id="TO_MBR1" platform:name="На подтверждение -&gt; В РЦ" platform:position="46">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_MBR_TRANS"/>
+    </transition>
+    <transition event="PODTV.PRO" target="PRO" platform:id="TO_CONTROL" platform:name="На подтверждение -&gt; Проконтролировать" platform:position="55">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="PODTV.TO_KRED" target="TO_KRED" platform:id="PODTV_CRED" platform:name="На подтверждение -&gt; К бухгалтеру по кредитам" platform:position="68">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="PODTV.TO_RKO_CUR_SPEC" target="TO_RKO_CUR_SPEC" platform:id="FROM_TO_CPE" platform:name="На подтверждение -&gt; На валютный спец.контроль" platform:position="73">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="PODTV.TO_KASSA" target="TO_KASSA" platform:id="PODTV_TO_KASSA" platform:name="На подтверждение -&gt; В кассу" platform:position="99">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="FORM_TO_KS_ACT"/>
+    </transition>
+    <transition event="PODTV.TO_KART" target="TO_KART" platform:id="PODTV_TOKART" platform:name="На подтверждении - В картотеке" platform:position="110">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="PODTV.WAIT_PROV" target="WAIT_PROV" platform:id="PODTV_WAITPROV" platform:name="На подтверждение -&gt; Ожидает проводки" platform:position="120">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="PODTV.PROV" target="PROV" platform:id="TO_PROV_PROV" platform:name="На подтверждение -&gt; Проведен" platform:position="145">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="PODTV.TO_OCB" target="TO_OCB" platform:id="PODTV_TO_OCB" platform:name="На подтверждение -&gt; В ОЦБ" platform:position="146"/>
+    <transition event="PODTV.WAIT_PROV" target="WAIT_PROV" platform:id="PODT_WAITPROVOUT" platform:name="На подтверждение -&gt; Ожидает проводки с выходом в Дб/Кт" platform:position="184">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+    <transition event="PODTV.TO_DEP" target="TO_DEP" platform:id="PODTV_DEPN" platform:name="На подтверждение -&gt; К бухгалтеру по депозитам" platform:position="194"/>
+    <transition event="PODTV.TO_HOZ_DOG" target="TO_HOZ_DOG" platform:id="PODTV_TO_HOZ_DOG" platform:name="На подтверждение -&gt; К бухгалтеру по хоз. договорам" platform:position="205"/>
+    <transition event="PODTV.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="PODTV_PROV_BANK" platform:name="На подтверждение -&gt; Проведен в банке" platform:position="217">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="PODTV.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="PODTV_P_BANK_DTR" platform:name="На подтверждение -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="229">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="TO_RKO" platform:name="В РКО" platform:useindex="true">
+    <transition event="TO_RKO.VOZV" target="VOZV" platform:id="VOZV_FROM_RKO" platform:name="В РКО -&gt; На возврат" platform:position="13">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TO_RKO.PROV" target="PROV" platform:id="P1297375" platform:name="В РКО -&gt; Проведен" platform:position="17">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="TO_RKO.TO_MBR" target="TO_MBR" platform:id="RKO_TRC" platform:name="В РКО -&gt; В РЦ" platform:position="83">
+      <platform:action method="TO_MBR_TRANS"/>
+    </transition>
+    <transition event="TO_RKO.PROV" target="PROV" platform:id="RKO_PRO_RED" platform:name="В РКО -&gt; Проведен под красное" platform:position="84">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="TO_RKO.PRO" target="PRO" platform:id="RKO_PROCONTR" platform:name="В РКО -&gt; Проконтролировать" platform:position="86">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO.VOZV" target="VOZV" platform:id="RKO_VOZV" platform:name="В РКО -&gt; На возврат" platform:position="89">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TO_RKO.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="RKO_VAL" platform:name="В РКО -&gt; На валютный контроль" platform:position="94">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO.TO_RKO_CUR_SPEC" target="TO_RKO_CUR_SPEC" platform:id="RKO_VAL_SPEC" platform:name="В РКО -&gt; На валютный спец.контроль" platform:position="95">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO.TO_KRED" target="TO_KRED" platform:id="RKO_KRED" platform:name="В РКО -&gt; К бухгалтеру по кредитам" platform:position="96">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO.TO_KASSA" target="TO_KASSA" platform:id="RKO_TO_KASSA" platform:name="В РКО -&gt; В кассу" platform:position="97">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="FORM_TO_KS_ACT"/>
+    </transition>
+    <transition event="TO_RKO.PODTV" target="PODTV" platform:id="RKO_TO_PORDTV" platform:name="В РКО -&gt; На подтверждение" platform:position="97">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO.WAIT_DVALUT" target="WAIT_DVALUT" platform:id="RKO_OJ_VAL" platform:name="В РКО -&gt; Ожидает валютирования" platform:position="100">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO.TO_KART" target="TO_KART" platform:id="TORKO_TOKART" platform:name="В РКО - В картотеке" platform:position="111">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_RKO.WAIT_PROV" target="WAIT_PROV" platform:id="TO_RKO_WAITPROV" platform:name="В РКО -&gt; Ожидает проводки" platform:position="122">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="TO_RKO.TO_OCB" target="TO_OCB" platform:id="RKO_TO_OCB" platform:name="В РКО -&gt; В ОЦБ" platform:position="128"/>
+    <transition event="TO_RKO.TO_DEP" target="TO_DEP" platform:id="RKO_TO_DEP" platform:name="Из РКО -&gt; К бухгалтеру по депозитам" platform:position="142"/>
+    <transition event="TO_RKO.WAIT_PROV" target="WAIT_PROV" platform:id="RKO_WAITPROVOUT" platform:name="В РКО -&gt; Ожидает проводки с выходом в  Дб/Кт" platform:position="181">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+    <transition event="TO_RKO.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="RKO_PROV_IN_BANK" platform:name="В РКО -&gt; Проведен в банке" platform:position="213">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="TO_RKO.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="RKO_PR_BANK_DBCR" platform:name="В РКО -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="214">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="TO_KRED" platform:name="К бухгалтеру по кредитам" platform:useindex="true">
+    <transition event="TO_KRED.VOZV" target="VOZV" platform:id="VOZV_FROM_KREDIT" platform:name="К бухгалтеру по кредитам -&gt; На возврат" platform:position="14">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TO_KRED.PROV" target="PROV" platform:id="P1297373" platform:name="К бухгалтеру по кредитам -&gt; Проведен" platform:position="15">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="TO_KRED.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="KRED_TO_RKO_CUR" platform:name="К бухгалтеру по кредитам -&gt; На валютный контроль" platform:position="35">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_KRED.ON_DISTR" target="ON_DISTR" platform:id="KRED_TO_DISTR" platform:name="К бухгалтеру по кредитам -&gt; На распределении" platform:position="62"/>
+    <transition event="TO_KRED.PRO" target="PRO" platform:id="PRO_FROM_KRED" platform:name="К бухгалтеру по кредитам -&gt; Проконтролировать" platform:position="70"/>
+    <transition event="TO_KRED.PROV" target="PROV" platform:id="KRED_PROV_DTKT" platform:name="К бухгалтеру по кредитам -&gt; Проведен под красное" platform:position="71">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="TO_KRED.PAY" target="PAY" platform:id="PAY_FROM_KRED" platform:name="К бухгалтеру по кредитам -&gt; Оплачен" platform:position="71">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PAY"/>
+    </transition>
+    <transition event="TO_KRED.TO_MBR" target="TO_MBR" platform:id="TO_MBR_FROM_KRED" platform:name="К бухгалтеру по кредитам -&gt; В РЦ" platform:position="73">
+      <platform:action method="TO_MBR_TRANS"/>
+    </transition>
+    <transition event="TO_KRED.TO_RKO_CUR_SPEC" target="TO_RKO_CUR_SPEC" platform:id="TO_RKO_CUR_SPC_K" platform:name="К бухгалтеру по кредитам -&gt; На валютный спец.контроль" platform:position="75">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_KRED.PODTV" target="PODTV" platform:id="KRED_POD" platform:name="К бухгалтеру по кредитам -&gt; На подтверждение" platform:position="84">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_KRED.TO_RKO" target="TO_RKO" platform:id="KRED_RKO" platform:name="К бухгалтеру по кредитам -&gt; В РКО" platform:position="99">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_KRED.TO_KRED_INSP" target="TO_KRED_INSP" platform:id="KRED_TO_INSP" platform:name="Кредитному инспектору от бухгалтера" platform:position="126"/>
+    <transition event="TO_KRED.TO_KASSA" target="TO_KASSA" platform:id="KRED_KASSA" platform:name="К бухгалтеру по кредитам -&gt; В кассу" platform:position="127"/>
+    <transition event="TO_KRED.TO_DEP" target="TO_DEP" platform:id="FROM_CRED_TO_DEP" platform:name="Бухгалтер по кредитам -&gt; Бухгалтер по депозитам" platform:position="151"/>
+    <transition event="TO_KRED.WAIT_DVALUT" target="WAIT_DVALUT" platform:id="KRED2WAIT_VAL" platform:name="К бухгалтеру по кредитам -&gt; Ожидает валютирования" platform:position="153"/>
+    <transition event="TO_KRED.TO_KART" target="TO_KART" platform:id="KRED_TO_KART" platform:name="К бухгалтеру по кредитам -&gt; В картотеке" platform:position="162"/>
+    <transition event="TO_KRED.FORM" target="FORM" platform:id="KRED_TO_FORM" platform:name="К бухгалтеру по кредитам -&gt; Не обработан (вексельная подсистема)" platform:position="189"/>
+    <transition event="TO_KRED.WAIT_PROV" target="WAIT_PROV" platform:id="CRED_WAIT_PROV" platform:name="К бухгалтеру по кредитам -&gt; Ожидает проводки" platform:position="207">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="TO_KRED.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="KRED_PROV_BANK" platform:name="К бухгалтеру по кредитам -&gt; Проведен в банке" platform:position="223">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="TO_KRED.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="KRED_P_BANK_DTCR" platform:name="К бухгалтеру по кредитам -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="235">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="SENDED" platform:name="Отправлен" platform:useindex="true">
+    <transition event="SENDED.TO_MBR" target="TO_MBR" platform:id="SENDED_TO_MBR" platform:name="Отправлен -&gt; В РЦ" platform:position="205"/>
+  </state>
+  <state id="TO_OCB" platform:name="В ОЦБ" platform:useindex="true">
+    <transition event="TO_OCB.PAY" target="PAY" platform:id="TO_OCB_PAY" platform:name="В ОЦБ -&gt; Оплачен" platform:position="108">
+      <platform:action method="TO_PAY"/>
+    </transition>
+    <transition event="TO_OCB.FORM" target="FORM" platform:id="TO_OCB_FORM" platform:name="В ОЦБ -&gt; Не обработан" platform:position="109"/>
+    <transition event="TO_OCB.VOZV" target="VOZV" platform:id="TO_OCB_VOZV" platform:name="В ОЦБ -&gt; На возврат" platform:position="129">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TO_OCB.WAIT_PROV" target="WAIT_PROV" platform:id="TO_OCB_WAIT_PROV" platform:name="В ОЦБ -&gt; Ожидает проводки" platform:position="206">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+  </state>
+  <state id="TO_RETURN" platform:name="Возвратить клиенту" platform:useindex="true">
+    <transition event="TO_RETURN.FORM" target="FORM" platform:id="P1297401" platform:name="Возвратить клиенту -&gt; Не обработан" platform:position="53"/>
+  </state>
+  <state id="TO_DEP" platform:name="К бухгалтеру по депозитам" platform:useindex="true">
+    <transition event="TO_DEP.PODTV" target="PODTV" platform:id="DEPOZ_TO_TO_PROV" platform:name="Бухгалтер по депозитам -&gt; На подтверждение" platform:position="144"/>
+    <transition event="TO_DEP.VOZV" target="VOZV" platform:id="FROM_DEP_TO_RET" platform:name="Бухгалтеру по депозитам -&gt; На возврат" platform:position="148"/>
+    <transition event="TO_DEP.PROV" target="PROV" platform:id="DPO_BUH_TO_PROV" platform:name="К бухгалтеру по депозитам -&gt; Проведен" platform:position="155">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="TO_DEP.TO_MBR" target="TO_MBR" platform:id="BUH_DEPN_TO_RC" platform:name="Бухгалтер по депозитам -&gt; В РЦ" platform:position="157">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_MBR_TRANS"/>
+    </transition>
+    <transition event="TO_DEP.TO_KASSA" target="TO_KASSA" platform:id="TO_DEP_TO_KASSA" platform:name="В касуу от бух. по депозитам" platform:position="159"/>
+    <transition event="TO_DEP.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="TO_DEP_TO_VAL" platform:name="Бухгалтер по депозитам -&gt; На валютный контроль" platform:position="163"/>
+    <transition event="TO_DEP.PRO" target="PRO" platform:id="TO_DEP_PRO" platform:name="К бухгалтеру по депозитам-&gt;Проконтролировать" platform:position="166">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="TO_DEP.PROV" target="PROV" platform:id="TO_DEP_PROV_DTKT" platform:name="К бухгалтеру по депозитам - Проведено с Деб/Кред" platform:position="175">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="TO_DEP.TO_KASSA" target="TO_KASSA" platform:id="TO_DEP_2_TO_KASS" platform:name="На подтверждение к бухгалтеру по депозитам -&gt; В кассу" platform:position="179"/>
+    <transition event="TO_DEP.TO_KRED" target="TO_KRED" platform:id="DEP_TO_CRED" platform:name="К бухгалтеру по депозитам -&gt; К бухгалтеру по кредитам" platform:position="180"/>
+    <transition event="TO_DEP.WAIT_PROV" target="WAIT_PROV" platform:id="TO_DEP_WAIT_PROV" platform:name="К бухгалтеру по депозитам -&gt; Ожидает проводки" platform:position="196"/>
+    <transition event="TO_DEP.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="BUH_PROV_BANK" platform:name="К бухгалтеру по депозитам -&gt; Проведен в банке" platform:position="220">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="TO_DEP.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="BUH_P_BANK_DTCR" platform:name="К бухгалтеру по депозитам -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="232">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="ISNULL" platform:name="Аннулирован" platform:useindex="true">
+    <transition event="ISNULL.TO_KART" target="TO_KART" platform:id="TO_KART_AGAIN" platform:name="Аннулирован -&gt; В картотеке" platform:position="66"/>
+  </state>
+  <state id="TO_HOZ_DOG" platform:name="К бухгалтеру по хоз. договорам" platform:useindex="true">
+    <transition event="TO_HOZ_DOG.PROV" target="PROV" platform:id="HOZ_DOG_PROV" platform:name="К бухгалтеру по хоз. договорам -&gt; Проведен" platform:position="169">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="TO_HOZ_DOG.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="HOZ_DOG_CUR" platform:name="К бухгалтеру по хоз. договорам -&gt; На валютный контроль" platform:position="170"/>
+    <transition event="TO_HOZ_DOG.TO_RKO_CUR_SPEC" target="TO_RKO_CUR_SPEC" platform:id="HOZ_DOG_TO_CUR_S" platform:name="К бухгалтеру по хоз. договорам -&gt; На валютный спец. контроль" platform:position="171"/>
+    <transition event="TO_HOZ_DOG.PODTV" target="PODTV" platform:id="HOZ_DOG_TO_PODTV" platform:name="К бухгалтеру по хоз. договорам -&gt; На подтверждение" platform:position="172"/>
+    <transition event="TO_HOZ_DOG.TO_MBR" target="TO_MBR" platform:id="HOZ_DOG_TO_MBR" platform:name="К бухгалтеру по хоз. договорам -&gt; В РЦ" platform:position="174"/>
+    <transition event="TO_HOZ_DOG.TO_KASSA" target="TO_KASSA" platform:id="HOZ_DOG_TO_KASSA" platform:name="К бухгалтеру по хоз. договорам -&gt; В кассу" platform:position="207"/>
+    <transition event="TO_HOZ_DOG.VOZV" target="VOZV" platform:id="HOZ_DOG_VOZV" platform:name="К бухгалтеру по хоз. договорам -&gt; На возврат" platform:position="210">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="TO_HOZ_DOG.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="HOZ_PROV_NAMK" platform:name="К бухгалтеру по хоз. договорам -&gt; Проведен в банке" platform:position="221">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="TO_HOZ_DOG.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="HOZ_P_BANK_DTCR" platform:name="К бухгалтеру по хоз. договорам -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="233">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+  <state id="WAIT_DVALUT" platform:name="Ожидает валютирования" platform:useindex="true">
+    <transition event="WAIT_DVALUT.PROV" target="PROV" platform:id="WAIT_TO_PROV" platform:name="Ожидает валютирования -&gt; Проведен" platform:position="32">
+      <platform:action method="NOWORK_PAYALL"/>
+    </transition>
+    <transition event="WAIT_DVALUT.VOZV" target="VOZV" platform:id="VOZV_FROM_WAIT" platform:name="Ожидает валютирования -&gt; На возврат" platform:position="33">
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="WAIT_DVALUT.TO_RKO" target="TO_RKO" platform:id="WAIT_RKO" platform:name="Ожидает валютирования -&gt; В РКО" platform:position="116">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="WAIT_DVALUT.PODTV" target="PODTV" platform:id="WAIT_PODTV" platform:name="Ожидает валютирования -&gt; На подтверждение" platform:position="117">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="WAIT_DVALUT.TO_KRED" target="TO_KRED" platform:id="WAIT_KRED" platform:name="Ожидает валютирования -&gt; К бухгалтеру по кредитам" platform:position="118">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="WAIT_DVALUT.TO_RKO_CUR" target="TO_RKO_CUR" platform:id="WAIT_RKOCUR" platform:name="Ожидает валютирования -&gt; На валютный контроль" platform:position="119">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="WAIT_DVALUT.PRO" target="PRO" platform:id="WAIT_PRO" platform:name="Ожидает валютирования -&gt; Проконтролировать" platform:position="120">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="WAIT_DVALUT.TO_RKO_CUR_SPEC" target="TO_RKO_CUR_SPEC" platform:id="WAIT_RKOCURSPEC" platform:name="Ожидает валютирования -&gt; На валютный спец.контроль" platform:position="121">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="WAIT_DVALUT.TO_KASSA" target="TO_KASSA" platform:id="WAIT_KASSA" platform:name="Ожидает валютирования -&gt; В кассу" platform:position="122">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="FORM_TO_KS_ACT"/>
+    </transition>
+    <transition event="WAIT_DVALUT.PROV" target="PROV" platform:id="WAIT_PROV_DTKT" platform:name="Ожидает валютирования -&gt; Проведен с выходом Дт/Кт" platform:position="123">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="WAIT_DVALUT.TO_MBR" target="TO_MBR" platform:id="WAIT_MBR" platform:name="Ожидает валютирования -&gt; В РЦ" platform:position="150">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="WAIT_DVALUT.TO_DEP" target="TO_DEP" platform:id="WAIT_DEPN" platform:name="Ожидает валютирования -&gt; К бухгалтеру по депозитам" platform:position="195"/>
+    <transition event="WAIT_DVALUT.WAIT_PROV" target="WAIT_PROV" platform:id="WDVAL_WPROV" platform:name="Ожидает валютирования -&gt; Ожидает проводки" platform:position="203">
+      <platform:action method="TO_WAIT_PROV"/>
+    </transition>
+    <transition event="WAIT_DVALUT.WAIT_PROV" target="WAIT_PROV" platform:id="WDVAL_WPROV_OUT" platform:name="Ожидает валютирования -&gt; Ожидает проводки с выходом в Дт/Кт" platform:position="204">
+      <platform:action method="TO_WAIT_PROV_OUT"/>
+    </transition>
+    <transition event="WAIT_DVALUT.TO_KART" target="TO_KART" platform:id="WAIT_DVL_TO_CARD" platform:name="Ожидает валютирования -&gt; В картотеке" platform:position="211">
+      <platform:validate method="DO_TRANS"/>
+    </transition>
+    <transition event="WAIT_DVALUT.TO_RETURN" target="TO_RETURN" platform:id="WAIT_DVL_TO_VOZV" platform:name="Ожидает валютирования -&gt; Возвратить клиенту" platform:position="212">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="PODTV_VOZV_ACT"/>
+    </transition>
+    <transition event="WAIT_DVALUT.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="WAIT_TO_PROV_BNK" platform:name="Ожидает валютирования -&gt; Проведен в банке" platform:position="212">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="WAIT_DVALUT.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="WAIT_V_P_BK_DTCR" platform:name="Ожидает валютирования -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="239">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+    <transition event="WAIT_DVALUT.AUX_CTRL" target="AUX_CTRL" platform:id="WAIT_AUX_CTRL" platform:name="Ожидает валютирования -&gt; Доп. контроль" platform:position="246"/>
+  </state>
+  <state id="WAIT_PROV" platform:name="Ожидает проводки" platform:useindex="true">
+    <transition event="WAIT_PROV.PROV" target="PROV" platform:id="WAITPROV_PROV" platform:name="Ожидает проводки -&gt; Проведен" platform:position="125">
+      <platform:action method="PAYALL_DEBCR_OUT"/>
+    </transition>
+    <transition event="WAIT_PROV.VOZV" target="VOZV" platform:id="WAITPROV_VOZV" platform:name="Ожидает проводки -&gt; На возврат" platform:position="126">
+      <platform:action method="DEL_WAIT_PROV"/>
+    </transition>
+    <transition event="WAIT_PROV.PAY" target="PAY" platform:id="WAIT_PROV_PAY" platform:name="Ожидает проводки -&gt; Оплачен" platform:position="174">
+      <platform:validate method="DO_TRANS"/>
+      <platform:action method="TO_PAY"/>
+    </transition>
+    <transition event="WAIT_PROV.TO_MBR" target="TO_MBR" platform:id="WAIT_PROV_TO_MBR" platform:name="Ожидает проводки -&gt; В РЦ" platform:position="192">
+      <platform:action method="TO_MBR_TRANS"/>
+    </transition>
+    <transition event="WAIT_PROV.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="WAIT_PROV_PROV_B" platform:name="Ожидает проводки -&gt; Проведен в банке" platform:position="227">
+      <platform:action method="TO_PROV_IN_BANK"/>
+    </transition>
+    <transition event="WAIT_PROV.PROV_IN_BANK" target="PROV_IN_BANK" platform:id="WAIT_P_BNK_DTCR" platform:name="Ожидает проводки -&gt; Проведен в банке с выходом в Дт/Кт" platform:position="240">
+      <platform:action method="TO_PR_BANK_DEBCR"/>
+    </transition>
+  </state>
+</scxml>

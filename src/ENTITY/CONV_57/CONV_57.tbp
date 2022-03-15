@@ -1,0 +1,4 @@
+@entity('PRODUCT')
+@name('Обновления версии')
+class CONV_57 extends CONV {
+}

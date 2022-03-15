@@ -1,0 +1,5 @@
+class S226_LOAN_CTGR;
+
+unique index IDX_Z#S226_LOAN_CTGR_CODE {
+	[CODE]
+}

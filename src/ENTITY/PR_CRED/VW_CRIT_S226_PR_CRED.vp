@@ -1,0 +1,702 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ViewPresentation classId="PR_CRED" shortName="VW_CRIT_S226_PR_CRED">
+    <Properties>
+        <Default>true</Default>
+        <ShowInheritors>true</ShowInheritors>
+        <ShowViewForInheritors>true</ShowViewForInheritors>
+        <ShowAllCollections>true</ShowAllCollections>
+        <Ordering>
+            <Column alias="C_NAME" type="asc"/>
+            <Column alias="C_NUM_DOG_3" type="asc"/>
+            <Column alias="C_NUM_DOG_MAIN" type="asc"/>
+        </Ordering>
+    </Properties>
+    <Columns>
+        <Column alias="C_NAME" referenceId="1">
+            <Name>Клиент</Name>
+            <Resizeable>true</Resizeable>
+            <Width>20</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_PN" referenceId="1">
+            <Name>Номер раздела</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_NUM_DOG_MAIN" referenceId="0">
+            <Name>Номер договора</Name>
+            <Resizeable>true</Resizeable>
+            <Width>14</Width>
+        </Column>
+        <Column alias="C_MAIN_V_ID" referenceId="1">
+            <Name>Счет</Name>
+            <Resizeable>true</Resizeable>
+            <Width>14</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_SUMMA_DOG" referenceId="0">
+            <Name>Сумма</Name>
+            <Align>right</Align>
+            <NumberPrecision>2</NumberPrecision>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+        </Column>
+        <Column alias="C_CUR_SHORT" referenceId="1">
+            <Name>Вал.</Name>
+            <Resizeable>true</Resizeable>
+            <Width>4</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DATE_BEGIN" referenceId="0">
+            <Name>Дата начала</Name>
+            <Align>center</Align>
+            <DateFormat>dd/MM/yyyy</DateFormat>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+        </Column>
+        <Column alias="C_DATE_ENDING" referenceId="0">
+            <Name>Дата окончания</Name>
+            <Align>center</Align>
+            <DateFormat>dd/MM/yyyy</DateFormat>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+        </Column>
+        <Column alias="C_NAME_1" referenceId="1">
+            <Name>Вид кредита</Name>
+            <Resizeable>true</Resizeable>
+            <Width>14</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_LIST_PLAN_PAY" referenceId="1">
+            <Name>Плановые операции</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>7</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_LIST_PAY" referenceId="1">
+            <Name>Фактические операции</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_PRC_RATE" referenceId="0">
+            <Name>%</Name>
+            <NumberPrecision>8</NumberPrecision>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+        </Column>
+        <Column alias="C_J_CALC_PRC" referenceId="1">
+            <Name>Начисленные проценты</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_PRC_CREDIT" referenceId="1">
+            <Name>Правила начисления процентов</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_COMISS_ARR" referenceId="1">
+            <Name>Комиссии и процентные схемы</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>9</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_IFRS_JOUR" referenceId="1">
+            <Name>Журнал стоимости ФИ</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>6</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>IFRS_STRING_PRC</Class>
+                <View>VW_CRIT_STRING_PRC</View>
+                <Condition>{C_PN} = [C_PN]
+ and {C_OBJ_REF} = [&amp;C_ID]
+ and {C_DATE_BEG} &gt;= [C_DATE_BEGIN]</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_IFRS_COST" referenceId="1">
+            <Name>Справедливая стоимость (ПУ/ПСД)</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>9</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>IFRS_FAIR_COST</Class>
+                <View>VW_CRIT_IFRS_FAIR_COST</View>
+                <Condition>{C_PN} = [C_PN] and {C_OBJ_REF} = [&amp;C_ID] and {C_DATE_BEG} &gt;= [C_DATE_BEGIN]</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_NAME_2" referenceId="1">
+            <Name>Состояние</Name>
+            <Resizeable>true</Resizeable>
+            <Width>9</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DATE_CLOSE" referenceId="0">
+            <Name>Дата закрытия</Name>
+            <Align>center</Align>
+            <DateFormat>dd/MM/yyyy</DateFormat>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+        </Column>
+        <Column alias="C_IFRS_INDICATORS" referenceId="1">
+            <Name>Характеристики МСФО</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>9</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>IFRS_INDICATORS</Class>
+                <View>VW_CRIT_IFRS_INDICATORS</View>
+                <Condition>{C_PN} = [C_PN]
+ and {C_OBJ_REF} = [&amp;C_ID]
+ and {C_DATE_BEG} &gt;= [C_DATE_BEGIN]</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_COST_HIST" referenceId="0">
+            <Name>Журнал сравнения стоимостей</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>IFRS_COST_HIST</Class>
+                <View>VW_CRIT_IFRS_COST_HIST</View>
+                <Condition>{C_PN} = [&amp;C_PN] and {C_OBJ_REF} = [&amp;C_ID]</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_GR_RISK_HIST" referenceId="1">
+            <Name>Группа риска</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>5</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DEVALUATION" referenceId="0">
+            <Name>МСФО. Стадии обесценения</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>9</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>DEVAL_HIST</Class>
+                <View>VW_CRIT_DEVAL_HIST</View>
+                <Condition> [&amp;C_ID] = {&amp;C_PRODUCT} </Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DEVAL_RESERV" referenceId="0">
+            <Name>МСФО. Оценочный резерв</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>DEVAL_RESERV</Class>
+                <View>VW_CRIT_DEVAL_RESERV</View>
+                <Condition>[&amp;C_ID] = {&amp;C_PRODUCT}</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_PRC_DEVAL" referenceId="0">
+            <Name>МСФО. Процент обесценения</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>PRC_DEVAL_HIST</Class>
+                <View>VW_CRIT_PRC_DEVAL_HIST</View>
+                <Condition>[&amp;C_ID] = {&amp;C_PRODUCT}</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_PD" referenceId="0">
+            <Name>МСФО. PD</Name>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>DEV_PRC_PAR_HIST</Class>
+                <View>VW_CRIT_DEV_PRC_PAR_HIST_PD</View>
+                <Condition>[&amp;C_ID] = {&amp;C_PRODUCT}</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_LGD" referenceId="0">
+            <Name>МСФО. LGD</Name>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>DEV_PRC_PAR_HIST</Class>
+                <View>VW_CRIT_DEV_PRC_PAR_HIST_LGD</View>
+                <Condition>[&amp;C_ID] = {&amp;C_PRODUCT}</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_LIST_PROL" referenceId="1">
+            <Name>Дополнительные соглашения</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_CLIENT_ID" referenceId="1">
+            <Name>Клиент</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>0</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_ACCOUNT" referenceId="1">
+            <Name>Ссудный счет</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>16</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DATE_BEGINING" referenceId="0">
+            <Name>Импортирован</Name>
+            <Align>center</Align>
+            <DateFormat>dd/MM/yyyy</DateFormat>
+            <Resizeable>true</Resizeable>
+            <Width>11</Width>
+        </Column>
+        <Column alias="C_VNB_UNUSED_LINE" referenceId="1">
+            <Name>В/б счет для неиспользованной кр.линии</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>30</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_VNB_EXCEED_PRC" referenceId="1">
+            <Name>В/б счет для учета просроченных процентов</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>30</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_ACC_DEBTS_CR" referenceId="1">
+            <Name>Счет просроченной задолженности по кредиту</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>30</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_ACC_DEBTS_PRC" referenceId="1">
+            <Name>Счет просроченной задолженности по процентам</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>30</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_ACC_RESERV" referenceId="1">
+            <Name>Счет резерва</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>16</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_ACC_RESERV_DEBTS" referenceId="1">
+            <Name>Счет резерва для просроченной задолженности</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>30</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_ACC_DEMAND_PRC" referenceId="1">
+            <Name>Счет требований по получению процентов</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>30</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_PARAM_FOR_PLAN" referenceId="1">
+            <Name>Параметры планирования</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_PLAN_HIST" referenceId="1">
+            <Name>История изменения плановых графиков</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="LIST_MF" referenceId="1">
+            <Name>История изменения денежных потоков</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>IFRS_MF_HIST</Class>
+                <View>VW_CRIT_IFRS_MF_HIST</View>
+                <Condition>{C_PN} = [&amp;C_PN] and  {C_OBJ_REF} = [&amp;C_ID]</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_PRJ_KIND_NAME" referenceId="1">
+            <Name>Тип проекта</Name>
+            <Resizeable>true</Resizeable>
+            <Width>16</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DATE_GIVE" referenceId="0">
+            <Name>Дата выдачи</Name>
+            <Align>center</Align>
+            <DateFormat>dd/MM/yyyy</DateFormat>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+        </Column>
+        <Column alias="C_DATE_PAYOUT_LTD" referenceId="0">
+            <Name>Предельная дата выдач</Name>
+            <Align>center</Align>
+            <DateFormat>dd/MM/yyyy</DateFormat>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+        </Column>
+        <Column alias="C_DATE_ENDING_MAX" referenceId="0">
+            <Name>Макс дата окончания</Name>
+            <Align>center</Align>
+            <DateFormat>dd/MM/yyyy</DateFormat>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+        </Column>
+        <Column alias="C_NUM_DOG_2" referenceId="1">
+            <Name>Кредит верхнего уровня</Name>
+            <Resizeable>true</Resizeable>
+            <Width>9</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_NUM_DOG_1" referenceId="1">
+            <Name>Номер ген. соглашения</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>0</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_ARRAY_DOG_ACC" referenceId="1">
+            <Name>Счета договора</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>6</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="LIST_REQ_CLIENT" referenceId="0">
+            <Name>Расчетные счета клиента</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>LIST_REQ_CLIENT</Class>
+                <View>VW_CRIT_LIST_REQ_CLIENT</View>
+                <Condition> {&amp;C_PROD}  =  [&amp;C_ID] </Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_IND_RATES" referenceId="0">
+            <Name>Инд. курсы</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>4</Width>
+            <Navigation>
+                <Transition>reverse</Transition>
+                <Class>IND_RATES</Class>
+                <View>VW_CRIT_IND_RATES</View>
+            </Navigation>
+        </Column>
+        <Column alias="C_CCARD_DOC" referenceId="0">
+            <Name>Документы КК</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>CRED_CARD_DOC</Class>
+                <View>VW_CRIT_CRED_CARD_DOC</View>
+                <Condition>[&amp;C_LIST_PAY] = {C_FACT_OPER_COLL}</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DEPART" referenceId="1">
+            <Name>Подразделение</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>17</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_FILIAL" referenceId="1">
+            <Name>Филиал</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>8</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_CLASS_ID" referenceId="0">
+            <Name>Тип</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>4</Width>
+        </Column>
+        <Column alias="C_NUM_DOG_3" referenceId="0">
+            <Name>Портфель</Name>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+        </Column>
+        <Column alias="C_ARRAY_SUM_DOG" referenceId="1">
+            <Name>Суммы договора</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>6</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DEBTORS" referenceId="1">
+            <Name>Созаемщики</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_BANK_SWIFT" referenceId="1">
+            <Name>SWIFT реквизиты</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>7</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_SECURE" referenceId="0">
+            <Name>Обеспечение</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>ZALOG</Class>
+                <View>VW_CRIT_ZALOG_PRD_VW_PR_CRED</View>
+                <Condition> {&amp;C_PRODUCT}= [&amp;C_ID] </Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DOCS" referenceId="0">
+            <Name>Документы</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>MAIN_DOCUM</Class>
+                <View>VW_CRIT_DOC_FOR_CRED</View>
+                <Condition> [&amp;C_ID] =  {C_PROD_DT} or  [&amp;C_ID] =  {C_PROD_KT}</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_CAUSE" referenceId="1">
+            <Name>Причины отказа</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>6</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_ID" referenceId="1">
+            <Name>ID</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>20</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="CHANGE_RULES" referenceId="0">
+            <Name>Условия реструктуризации</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>CHANGE_RULE</Class>
+                <View>VW_CRIT_CHANGE_RULE_NUK</View>
+                <Condition>  {&amp;C_CRED} =  [&amp;C_ID] </Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_FL_RULE" referenceId="0">
+            <Name>Правила расчета процентных ставок</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>FL_RATE_RELATION</Class>
+                <View>VW_CRIT_FLR_RELATION_PRVW</View>
+                <Condition> [&amp;C_ID] =  {&amp;PROD} </Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_RES_OTHER_FIL" referenceId="1">
+            <Name>Урегулирование резерва в другом филиале</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_INDIVID_REZ" referenceId="0">
+            <Name>Индивидуальное резервирование</Name>
+            <Resizeable>true</Resizeable>
+            <Width>12</Width>
+        </Column>
+        <Column alias="C_EARLY_PAY" referenceId="1">
+            <Name>Условия досрочного погашения</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>30</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_REGL_OPER" referenceId="0">
+            <Name>Регламентные операции</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>REGL_OPER</Class>
+                <View>VW_CRIT_REGL_OPER</View>
+                <Condition>[&amp;C_ID] = {&amp;C_PRODUCT}</Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DEPART_CODE" referenceId="1">
+            <Name>Код подразделения</Name>
+            <Resizeable>true</Resizeable>
+            <Width>8</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_CATEGORY_INFO" referenceId="1">
+            <Name>Категория информации</Name>
+            <Resizeable>true</Resizeable>
+            <Visibility>invisible</Visibility>
+            <Width>26</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_DEMAND_PAY" referenceId="0">
+            <Name>Досрочное истребование задолженностей</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>15</Width>
+            <Navigation>
+                <Transition>condition</Transition>
+                <Class>DEMAND_PAY</Class>
+                <View>VW_CRIT_DEMAND_PAY</View>
+                <Condition> {&amp;C_CRED} =  [&amp;C_ID] </Condition>
+            </Navigation>
+        </Column>
+        <Column alias="C_COPY_TO_TRANSH" referenceId="0">
+            <Name>Срок линии распространять на транш</Name>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+        </Column>
+        <Column alias="C_INVOICE" referenceId="0">
+            <Name>До востребования</Name>
+            <Resizeable>true</Resizeable>
+            <Width>6</Width>
+        </Column>
+        <Column alias="C_LIMIT_SALDO" referenceId="0">
+            <Name>Лимит остатка ссудной задолженности</Name>
+            <Align>right</Align>
+            <NumberPrecision>2</NumberPrecision>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+        </Column>
+        <Column alias="C_PROPERTIES" referenceId="1">
+            <Name>Дополнительные свойства</Name>
+            <Align>center</Align>
+            <Resizeable>true</Resizeable>
+            <Width>9</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="UID" referenceId="0">
+            <Name>Уникальный идентификатор договора</Name>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+        </Column>
+    </Columns>
+</ViewPresentation>

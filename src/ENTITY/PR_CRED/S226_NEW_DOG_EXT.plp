@@ -1,0 +1,39 @@
+class PR_CRED;
+
+@import_plsql(true)
+@this(create_on_start:=true)
+@name('S226. Открыть договор') /* Свойство операции "Наименование" */
+@tag('EXTENSION')
+constructor S226_NEW_DOG_EXT instead of S226_NEW_DOG is
+-- категория кредита
+@name('Категория')     public V_CRED_CAT [S226_LOAN_CT_REF];
+
+
+S226_NEW_DOG_EXT 
+
+	return ref [PR_CRED] is
+
+validate is
+/* Секция "Проверка" */
+begin
+	&BASE$SETVARS;
+	&BASE$VALIDATE;
+	&BASE$GETVARS;
+end;
+
+execute is
+/* Секция "Тело" */
+begin
+	&BASE$SETVARS;
+	&BASE$EXECUTE;
+	if V_CRED_CAT is not null then 
+			::[S226_CRED_CATEG].[NEW_AUTO]	(P_CREDIT 		== this,
+											 P_DATE_BEG 	== [system].[OP_DATE],
+											 P_DATE_END 	== null,
+											 P_CRED_CAT 	== V_CRED_CAT
+			);
+	end if;
+end;
+
+end; 
+end; /* конeц constructor S226_NEW_DOG_EXT */

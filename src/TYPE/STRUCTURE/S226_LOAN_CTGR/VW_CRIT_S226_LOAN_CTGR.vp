@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ViewPresentation classId="S226_LOAN_CTGR" shortName="VW_CRIT_S226_LOAN_CTGR">
+    <Properties/>
+    <Columns>
+        <Column alias="C_CODE" referenceId="0">
+            <Name>Код</Name>
+            <Resizeable>true</Resizeable>
+            <Width>10</Width>
+        </Column>
+        <Column alias="C_NAME" referenceId="0">
+            <Name>Наименование</Name>
+            <Resizeable>true</Resizeable>
+            <Width>20</Width>
+        </Column>
+        <Column alias="C_CRED_TYPE" referenceId="1">
+            <Name>Вид кредита</Name>
+            <Resizeable>true</Resizeable>
+            <Width>15</Width>
+            <Navigation>
+                <Transition>auto</Transition>
+            </Navigation>
+        </Column>
+        <Column alias="C_COEFF" referenceId="0">
+            <Name>Коэффициент</Name>
+            <Align>right</Align>
+            <Resizeable>true</Resizeable>
+            <Width>15</Width>
+        </Column>
+    </Columns>
+</ViewPresentation>

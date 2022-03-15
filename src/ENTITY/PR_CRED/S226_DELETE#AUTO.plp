@@ -1,0 +1,184 @@
+class PR_CRED;
+/**
+ * @comment
+ * Операция "Удалить договор"
+ * Операция удаления текущего кредитного договора.
+ * Выполняемые функции: 
+ * Пользователю предлагается экранная форма операции (окно), позволяющая  подтвердить или отменить вызов операции (выбором соответствующей "кнопки" экранной формы).
+
+ * ВНИМАНИЕ! В данной версии операции разрешено удаление действующих договоров.
+ * Экранная форма операции.
+ * Элементы управления
+ * ·	ОК ? "кнопка" подтверждения удаления текущего договора
+ * ·	Отмена ? "кнопка" отказа от выполнения удаления
+
+ */
+@import_plsql(true)
+@this(create_on_start:=true)
+@name('S226. Удалить договор')
+destructor S226_DELETE#AUTO is
+	@name('Дополнительные параметры') public V_ADDS [STRING_32000];
+	pragma include (::[RUNTIME].[MACRO_LIB]);
+	S226_DELETE#AUTO is
+		execute is
+			/*
+			 * Дата     Автор      BFS         Описание
+			 * -------- ---------- ----------- ---------------------------------------------------
+			 * 01.01.98 Москаленко				Создание операции		
+			 * 10.07.06 JBokhan 		BFS00024419 Добавлена проверка на состояние договора, удалять договор можно только на этапе оформления,
+			 * 									т.е. в состоянии "Ожидает подтверждения". Работающий договор удалять нельзя.
+			 * 13.04.10 Nesterenko	BS00133979	Добавлено удаление записей из структуры FL_RATE_RELATION, ссылающихся на удаляемый договор.
+			 * 01.06.10 Ponomarev	BS00132536	Удаление записей из KB_HIST_ATTR заменено на удаление в KB_HISTORY_SUBJ и KB_RECORD
+			 * 28.02.11 Jbokhan		BS00161065	При удалении экземпляра выполняем удаление доп.параметров и р/с клиента данного договора
+			 * 									из таблиц PROPERTY_PROD и LIST_REQ_CLIENT.
+			 * 03.05.11 Ponomarev	BS00163896	при удалении кредита ссылка на него в субъектах кредитной истории очищается, запись не удаляется
+			 * 11.07.12 Zheleznov	BS00186322	Добавлено удаление индивидуальных курсов по договору
+			 * 04.10.13 Jbokhan		BS00559613	Добавлена проверка, нельзя удалять "транш" составного продукта, только КВУ и его части одновременно.
+			 * 13.01.14 drozhzhin	BS00692405	Добавлено удаление алгоритма МОП при удалении договора.
+			 * 03.03.14 JBokhan		BS00807723	Добавлено удаление записей структуры FACTOR_MP.
+			 * 18.11.14 Timofeev		RP0144905	Добавлено удаление истории льготных периодов.
+			 * 11.11.14 a.titov		RP0009922  	Добавлено удаление записи из справочника "Исторя операций отмены/переоформления" (HIST_CANC_REBOOK)
+			 * 24.05.17 Gruntovskiy	RP0558794	Добавлено удаление договора из ПОСа
+			 * 30.09.19 Anoshkin		RP0613997	Добавлено удаление УИД
+			 * 27.10.20 shlikov		RP0626567	Добавлена инициализация события CREDIT_CHANGE_EVENT при удалении транша.
+			 */
+			Pragma INCLUDE (::[SYSTEM].[PRODUCTS]);
+			ref_reserv_acc	ref [AC_FIN];
+			acc_num				[ACCNUM];
+			early_pay_sch	ref [EARLY_PAY];
+			rScheme 		ref [PRC_SCHEME];
+			sAdds				[STRING_32000];
+		begin
+			if [COM_STATUS] != [COM_STATUS_PRD]([CODE]='WAIT_CONF') then
+				pragma error('Удалить договор можно только в состоянии оформления - "Ожидает подтверждения"');
+			end if;
+			if ::[TUNE_COMPOSITE].[LIB].IsComposit(rCred == this.[HIGH_LEVEL_CR]) and not nvl([STR].get_bool_par(V_ADDS, 'DELETE_PART_COMPOSITE'), false) then
+				pragma error('Ошибка! Удаление составного продукта возможно только над договором верхнего уровня.');
+			end if;
+			if ::[TUNE_COMPOSITE].[LIB].IsComposit(rCred == this) then
+				[STR].set_par(V_ADDS, 'DELETE_PART_COMPOSITE', true);
+				[DELETE#AUTO].V_ADDS := V_ADDS;
+				for x in ::[PR_CRED] all where x.[HIGH_LEVEL_CR] = this
+				loop
+					x.[DELETE#AUTO];
+				end loop;
+				[DELETE#AUTO].V_ADDS := null;
+			end if;
+			-- Модифицировано 29.03.2006, AFrantsuzov
+			for (
+		select Schema(
+			Schema.[DEBT]: DEBT,
+			Schema.[PRC_SCHEME]: PRC_SCHEME)
+		in this.[COMISS_ARR] all
+		where not Schema.[PRC_SCHEME] is null)
+			loop
+				rScheme := Schema.[PRC_SCHEME];
+				rScheme.[PRODUCT] := null;
+				begin
+					&sp(DEL)
+					if rScheme.[P_PRIVATE] then
+						delete x in this.[COMISS_ARR] where x%id = Schema.[DEBT];
+						::[CRED_INTERFACE].[PRX_PRC_SCHEME].DeleteSchemPrc(rScheme);
+					end if;
+				exception when others then
+					&rb(DEL)
+				end;
+			end loop;
+			early_pay_sch := this.[EARLY_PAY];
+			this.[EARLY_PAY] := null;
+			begin
+				early_pay_sch.DELETE#AUTO;
+			exception when others then
+				null;
+			end;
+			for f_o in ::[FIN_ORDER] all where f_o.[PRODUCT] = this and f_o%state != 'FORM'
+			loop
+				pragma error('По договору существуют исполненные или ожидающие подтверждения фин. распоряжения.');
+			end loop;
+			var f_ord [FIN_ORDER];
+			begin
+				for fin_ord_ in ::[FIN_ORDER] all where fin_ord_.[PRODUCT] = this
+				loop
+					f_ord := fin_ord_;
+					::[CRED_INTERFACE].[PRX_FIN_ORDER].DeleteFinOrder(fin_ord_, false);
+				end loop;
+			exception when others then
+				pragma error('Ошибка при удалении распоряжения № '||f_ord.[DOCUMENT_NUM]||' по кредитному договору № '||[NUM_DOG]||NL$||sqlerrm);
+			end;
+			for PR_ACC in ::[ACC_PROD] all
+						where PR_ACC.[PROD_REF] = this
+			loop
+				PR_ACC.[DELETE#AUTO];
+			end loop;
+			if [COM_STATUS]=[COM_STATUS_PRD]([CODE]='CLOSE') or [COM_STATUS] is null then
+				begin
+					SYSLIB.del_refs2obj(this%id);
+				exception when others then
+					pragma error('Ошибка при удалении договора = '||this%id||' '||SQLERRM);
+				end;
+			end if;
+			begin
+				for res_acc in [RESERV_ACCS]
+				loop
+					for acc_ in res_acc.[ACC_OF_RANGE] where acc_.[ACCOUNT_DOG].[1].[2].[COM_STATUS] = ::[COM_STATUS_PRD]([CODE] = 'TO_OPEN')
+					loop
+						acc_num := acc_.[ACCOUNT_DOG].[1].[2].[MAIN_V_ID];
+						ref_reserv_acc := acc_.[ACCOUNT_DOG].[1].[2];
+						acc_.[DELETE#AUTO];
+						::[CRED_INTERFACE].[PRX_AC_FIN].ac_fin_delete(ref_reserv_acc);
+					end loop;
+				end loop;
+			exception when others then
+				pragma error('Ошибка при удалении зарезервированного счета №' || acc_num || ' : ' || SQLERRM);
+			end;
+			for DECL_ON_CRED_REF in ::[DECL_ON_GET_CRED] all
+		where DECL_ON_CRED_REF.[DECL_PRD] = this
+			loop
+				DECL_ON_CRED_REF.[DECL_PRD] := null;
+				if DECL_ON_CRED_REF%state != 'ON_EXECUTION' then
+					DECL_ON_CRED_REF%state := 'ON_EXECUTION';
+				end if;
+			end loop;
+			pragma IF_DEF (FACTORING);
+			begin
+				delete x in ::[REDEEM_UNIT] all where x.[CRED_REF] = this;
+			exception when others then
+				pragma error('Ошибка при удалении ссылок из договора факторинга');
+			end;
+			pragma END_IF;
+	
+	delete r in ::[CR_RISK_GR] all where r.[PROD] = this;
+	
+	update subj(subj.[OBJ_REF] = null) in ::[KB_HISTORY_SUBJ] all where subj.[OBJ_CLASS] = 'PRODUCT' and subj.[OBJ_REF] = this%id;
+	
+	delete flr in ::[FL_RATE_RELATION] all where this = flr.[PRODUCT];	-- BS00133979
+	
+	delete rec in ::[PROPERTY_PROD] all where rec.[PROD] = this;
+	delete rec in ::[LIST_REQ_CLIENT] all where rec.[PROD] = this;
+	delete rec in ::[FACTOR_MP] all where rec.[CRED] = this;
+	
+	delete rec in ::[CR_CALC_HIST] all where rec.[CRED] = this;
+	delete rec in ::[UID] all where rec.[PRODUCT] = this;
+			-- для траншей удаляем доли обеспечения, ссылающиеся на транш
+			if this.[HIGH_LEVEL_CR] is not null then
+				for rec in ::[PART_TO_LOAN] all
+			where rec.[PRODUCT]=this and rec.[AUTO]
+				loop
+					::[CRED_INTERFACE].[PRX_ZALOG].delete_auto(P_RECORD == rec, P_IGNORE_AUTO == true);
+				end loop;
+				--инициализируем событие удаления транша
+				[STR].set_par(sAdds, 'TRANCHE_DELETE_ID', this%id);
+				[STR].set_par(sAdds, 'TRANCHE_DELETE', true);
+				this.[HIGH_LEVEL_CR].[SEND_INFORM](P_ADD_PARAM == sAdds);
+			end if;
+			::[CRED_INTERFACE].[PRX_LIST_REQ].DeleteIndRates(this);
+			::[GRACE_VAR_HIST].[LIB].DelGrace(this);
+			-- Удаление из истории если сделка была переоформленной
+			::[HIST_CANC_REBOOK].[LIB].Del_Rebook(this);
+	
+	-- Удаление из ПОСа, так как финки уже все удалены, задолженностей не может быть
+	-- и на резерв кредит никак не влияет. Просто его удаляем
+	delete rec in ::[CRED_IN_PORT] all where rec.[PR_CRED] = this;
+		end;
+	end;
+end;

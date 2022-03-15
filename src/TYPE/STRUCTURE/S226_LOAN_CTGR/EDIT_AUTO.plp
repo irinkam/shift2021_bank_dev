@@ -1,0 +1,45 @@
+class S226_LOAN_CTGR;
+@name('Изменить')
+@tag('CREATED')
+method EDIT_AUTO is
+	EDIT_AUTO (
+		@name('Код')          P_CODE        in [STRING],
+		@name('Наименование') P_NAME        in [STRING],
+		@name('Вид кредита')  P_CREDIT_TYPE in [KIND_CREDITS_REF],
+		@name('Коэффициент')  P_COEFFICIENT in [NUMBER]
+	) is
+		validate is
+		begin
+			-- Start initialization of parameters and variables
+			if p_message = 'DEFAULT' then
+				P_CODE := this.[CODE];
+				P_NAME := this.[NAME];
+				P_CREDIT_TYPE := this.[CREDIT_TYPE];
+				P_COEFFICIENT := this.[COEFFICIENT];
+			end if;
+		-- End initialization of parameters and variables
+		end;
+		execute is
+			oldCode number;
+		begin
+			if P_CODE is null then
+				pragma error('Не заполнен реквизит "Код"');
+			end if;
+			if P_NAME is null then
+				pragma error('Не заполнен реквизит "Наименование"');
+			end if;
+			if P_COEFFICIENT is null then
+				pragma error('Не заполнен реквизит "Коэффициент"');
+			end if;
+
+			-- Установка значения реквизита "Код"
+			[CODE] := P_CODE;
+			-- Установка значения реквизита "Наименование"
+			[NAME] := P_NAME;
+			-- Установка значения реквизита "Вид кредита"
+			[CREDIT_TYPE] := P_CREDIT_TYPE;
+			-- Установка значения реквизита "Коэффициент"
+			[COEFFICIENT] := P_COEFFICIENT;
+		end;
+	end;
+end;

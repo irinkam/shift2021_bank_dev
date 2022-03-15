@@ -1,0 +1,6 @@
+class S226_CRED_CATEG;
+
+@name('Удалить')
+@tag('CREATED')
+destructor DELETE_AUTO is
+end;

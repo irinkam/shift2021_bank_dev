@@ -1,0 +1,9 @@
+@dictionary
+@entity('TYPE')
+@name('S226. Кредиты. Принадлежность к категории')
+class S226_CRED_CATEG {
+	@name('Кредит')         CREDIT   [PR_CRED_REF];
+	@name('Дата начала')    DATE_BEG [DATE];
+	@name('Дата окончания') DATE_END [DATE];
+	@name('Категория')      CRED_CAT [S226_LOAN_CT_REF];
+}

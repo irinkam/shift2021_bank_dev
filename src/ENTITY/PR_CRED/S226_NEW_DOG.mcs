@@ -1,0 +1,242 @@
+Public CurrGridValue
+
+Public Function Main(LastControl)
+	if LastControl is Nothing then
+		BtnAddP4P.Caption		= "Добавить"
+		BtnEditP4P.Caption		= "Изменить"
+		BtnDeleteP4P.Caption	= "Удалить"
+		GridCol9.ViewShortName	= "VW_CRIT_COMISS_PR_CRED"		
+		GridCol11.ViewShortName	= "VW_CRIT_TAR_COMM_PR_CRED"
+		GridCol36.ViewShortName	= "VW_CRIT_FLR_RELATION_PROD"
+		Number1.MaxLength = 14
+		Number8.MaxLength = 6
+		v_calendar.SetClassId "PR_CRED_REF"
+		v_calendar.ViewShortName = "VW_CRIT_CALENDARS"
+		BtnListPayExp.ViewShortName = "VW_CRIT_PLAN_OPER_EXPENSES"
+		Number1.Precision = 2
+		GridParam4Plan.ColHidden(0) = True
+	end if
+		
+	If LastControl Is BtnDeleteP4P Then
+		If GridParam4Plan.Row > 0 and GridParam4Plan.Row < GridParam4Plan.Rows Then
+			Call Form1.ScriptServerValidate(Nothing, "DELETING_P4P")
+			GridParam4Plan.Row = GridParam4Plan.RowByIndex(V_P4P_IDX.TEXT)
+		End If
+	End If
+
+	if LastControl is Gridcol36 Then
+		Call Form1.ScriptServerValidate(Nothing, "SET_FLR_CONTEXT" & GridPrcSchm.Row)
+	end if
+	
+	if LastControl is Text43 or LastControl is Object41 then
+		Combo10.Refresh
+	end if
+	
+	Main = true
+	' контроль банкротства физ. лиц может менять Main
+	Execute DEST_STR.TEXT
+	DEST_STR.TEXT = ""
+	
+	If Not(FrameFactor.Enabled) Then
+		SetEnabledControls(FrameFactor)
+	End If
+	
+	call DropPoint()
+End Function
+
+Private Sub GridParam4Plan_RowColChange()
+	If GridParam4Plan.Row > 0 Then
+		If GridParam4Plan.Row < GridParam4Plan.Rows Then
+			V_P4P_IDX.TEXT = GridParam4Plan.IndexByRow(GridParam4Plan.Row)
+		Else
+			V_P4P_IDX.TEXT = 0
+		End If
+	End If
+End Sub
+
+Public Sub PlanForm_OnFocus(iSet)
+	If iSet Then
+		Call Form1.ScriptServerValidate(Nothing, "MAKE_DEPAULT_PP")
+		Execute DEST_STR.TEXT
+		DEST_STR.TEXT = ""
+	End If
+End Sub
+
+Private Sub Grid24_RowColChange()
+	If Grid24.Row > 0 Then
+		If Grid24.Row < Grid24.Rows Then
+			Text39.TEXT = Grid24.IndexByRow(Grid24.Row)
+		Else
+			Text39.TEXT = Grid24.Rows
+		End If
+	End If
+End Sub
+
+Private Sub SetEnabledControls(Container)
+	For Each Ctrl In Container.Controls
+		Ctrl.Enabled = Container.Enabled
+	Next
+End Sub
+
+Private Sub V_OTHERS_TERM_RowColChange()
+	If V_OTHERS_TERM.Row > 0 Then
+		If V_OTHERS_TERM.Row < V_OTHERS_TERM.Rows Then
+			V_OTHERS_TERM_IDX.TEXT = V_OTHERS_TERM.IndexByRow(V_OTHERS_TERM.Row)
+		Else
+			V_OTHERS_TERM_IDX.TEXT = 0
+		End If
+	End If
+End Sub
+
+Public Sub DropPoint
+	
+	Do
+		if V_NEED_DROP.Text = "1" then
+			res = Form1.ScriptPlayEx("<%PLPCALL [PR_DEBT].[PR_DROP_POINT](" & _
+				"%PARAM%.P_CRED => %VAR%.V_CRED_VBS" & _
+				", %PARAM%.P_CHANGE_PR_RULE => 'TRUE'" & _
+				") %>")
+			if res = "1" then
+				Call Form1.ScriptServerValidate(Nothing, "CHANGE_PLAN_RULE")
+			else
+				Call Form1.ScriptServerValidate(Nothing, "CANCEL_DROP")
+			end if
+		else
+			exit Do
+		end if
+	loop
+	
+End Sub
+
+Public Sub Form1_OnTimer (idEvent)
+	If idEvent = 1 Then
+		Form1.KillTimer 1
+		Call Form1.ScriptServerValidate(Nothing, "CHANGE_PRC_ARR")
+		Call CheckCalcImpPrc()
+	End If
+End Sub
+
+Private Sub btnCalcImpt_OnClick()
+	Call Form1.ScriptServerValidate(Nothing, "CALC_IMPT_COM_" & GridComiss.IndexByRow(GridComiss.Row))
+End Sub
+
+Private Sub btnCalcImpPrc_OnClick()
+	Call Form1.ScriptServerValidate(Nothing, "CALC_IMPT_PRC_" & GridPrcSchm.IndexByRow(GridPrcSchm.Row))
+End Sub
+
+'----------------------------------
+' Обработка событий для GridPrcSchm
+'----------------------------------
+'BS00133979 -------- блокирует/разблокирует доступ к массиву правил -----------
+Private Sub GridPrcSchm_RowColChange()
+	If GridPrcSchm.Col = GridPrcSchm.ColByQual("FL_RULES") Then
+		Call Form1.ScriptServerValidate(Nothing, "PRCSCH_ROW_CHANGE" & GridPrcSchm.Row)
+		
+		If mid(SchemeForRule.TEXT,1,1) = "0" Then
+			Gridcol36.Enabled = false
+		Else
+			Gridcol36.Enabled = true
+		End If
+		
+		If len(SchemeForRule.TEXT) > 1 Then
+			MsgBox mid(SchemeForRule.TEXT,2)
+		End If
+		
+		SchemeForRule.TEXT = ""
+	End If
+
+	Call CheckCalcImpPrc
+End Sub
+
+Public Sub GridPrcSchm_BeforeEdit(Row, Col, Cancel)
+	CurrGridValue = GridPrcSchm.Value(Row,Col)	
+End Sub
+
+Public Sub GridPrcSchm_ValidateEdit (Row, Col, Cancel)
+	if Col = GridPrcSchm.ColByQual("PRC") and Runtime.Val(GridPrcSchm.EditText) <> CurrGridValue then
+		'изменяем % ставку в гриде
+		if numCanPrcSch = 0 then
+			MsgBox "У вас нет прав на изменение общей процентной схемы."
+			Cancel = true
+			Call Form1.ScriptServerValidate(Nothing, "SAVE_RATE_TBL_NO")
+		elseif numCanPrcSch = 1 then
+			'общая % схема, спросим пользователя что делать
+			if Form1.ScriptPlayEx("<% PLPCALL [PRC_SCHEME].[PRC_SCH_ACCESS](%PARAM%.P_COPY_SCH => 'FALSE', %PARAM%.P_VALUE => %VAR%.V_CAN_PRC_SCH) %>") then
+				Call Form1.ScriptServerValidate(Nothing, "SAVE_RATE_TBL_YES")
+			else
+				Cancel = true
+				Call Form1.ScriptServerValidate(Nothing, "SAVE_RATE_TBL_NO")
+			end if
+		elseif numCanPrcSch = 2 then
+			MsgBox "Изменение сложной процентной ставки необходимо производить в массиве ""История процентных ставок в процентной схеме""."
+			Cancel = true
+			Call Form1.ScriptServerValidate(Nothing, "SAVE_RATE_TBL_NO")
+		elseif numCanPrcSch = 9 then
+			'копия схемы
+			Call Form1.ScriptServerValidate(Nothing, "SAVE_RATE_TBL_YES")
+		end if		
+	end if	
+	Call CheckCalcImpPrc()
+End Sub
+
+'----------------------------------
+' Обработка событий для GridComiss
+'----------------------------------
+Private Sub GridComiss_BeforeDelRow (Row, Cancel)
+	iColPayComis = GridComiss.ColByQual("CHK")
+	'В колонке CHK отмечена комиссия за открытие лимита/счета - ее править нельзя.
+	If GridComiss.Value(Row, iColPayComis) = "1" Then
+		MsgBox "Нельзя удалять комиссию за открытие лимита/счета. Перейдите на основную закладку и удалите сумму комиссии."
+		Cancel = True
+	End If
+End Sub
+
+Private Sub GridComiss_BeforeEdit (Row, Col, Cancel)
+	'Получить индексы колонок с признаком существенности и вида затраты
+	iColImpt = GridComiss.ColByQual("IMPORTANCE")
+	iColTypeDebt = GridComiss.ColByQual("PRIORITY")
+	iColPayComis = GridComiss.ColByQual("CHK")
+
+	'В колонке CHK отмечена комиссия за открытие лимита/счета - ее править нельзя.
+	If GridComiss.Value(GridComiss.Row, iColPayComis) = "1" And Col <> iColImpt Then
+		Cancel = True
+	End If
+
+	'Существенность меняется только у затрат или процентных комиссий
+	If Col = iColImpt And GridComiss.Value(GridComiss.Row, iColTypeDebt) = "0" Then
+		Cancel = True
+	End If
+End Sub
+
+Private Sub GridComiss_ValidateEdit (Row, Col, Cancel)
+	'Вызвать переопределение вида затраты
+	Call Form1.ScriptServerValidate(Nothing, "GRID_COMISS_CHNG_" & GridComiss.IndexByRow(Row))
+	
+	'Если после редактирования изменился вид затраты то заблокировать/разблокировать кнопку расчета
+	Call CheckCalcImpt
+End Sub
+
+Private Sub GridComiss_RowColChange()
+	Call CheckCalcImpt	
+End Sub
+
+'--------------------------------------------
+Private Sub CheckCalcImpt()
+	iColTypeDebt = GridComiss.ColByQual("PRIORITY")
+	If GridComiss.Value(GridComiss.Row, iColTypeDebt) <> "0" Then
+		btnCalcImpt.Enabled = True
+	Else
+		btnCalcImpt.Enabled = False
+	End If
+End Sub
+
+Private Sub CheckCalcImpPrc()
+	iColTypeDebt = GridPrcSchm.ColByQual("PRIORITY")
+	iColScheme = GridPrcSchm.ColByQual("PRC_REF")
+	iColSchName = GridPrcSchm.ColByQual("PRC_REF.NAME")
+	If GridPrcSchm.Value(GridPrcSchm.Row, iColTypeDebt) <> "0" and (GridPrcSchm.Value(GridPrcSchm.Row, iColScheme) <> "0" or GridPrcSchm.Text(GridPrcSchm.Row, iColSchName) <> "") Then
+		btnCalcImpPrc.Enabled = True
+	Else
+		btnCalcImpPrc.Enabled = False
+	End If
+End Sub

@@ -1,0 +1,2 @@
+@name('Ссылка на "S226. Кредиты. Категория ссуды"')
+class S226_LOAN_CT_REF is ref [S226_LOAN_CTGR];

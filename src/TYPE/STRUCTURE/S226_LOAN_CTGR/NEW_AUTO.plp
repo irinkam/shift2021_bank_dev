@@ -1,0 +1,61 @@
+class S226_LOAN_CTGR;
+
+@name('Добавить')
+@tag('CREATED')
+constructor NEW_AUTO is
+
+NEW_AUTO (
+		@name('Код')          P_CODE        in [STRING],
+		@name('Наименование') P_NAME        in [STRING],
+		@name('Вид кредита')  P_CREDIT_TYPE in [KIND_CREDITS_REF],
+		@name('Коэффициент')  P_COEFFICIENT in [NUMBER]
+	) return ref [S226_LOAN_CTGR] is
+
+validate is
+begin
+			-- Start initialization of parameters and variables
+			if p_message = 'DEFAULT' then
+				P_CODE := this.[CODE];
+				P_NAME := this.[NAME];
+				P_CREDIT_TYPE := this.[CREDIT_TYPE];
+				P_COEFFICIENT := this.[COEFFICIENT];
+			end if;
+		-- End initialization of parameters and variables
+		end;
+
+execute is
+		begin
+			
+			if P_CODE is null then
+				pragma error('Не заполнен реквизит "Код"');
+			end if;
+			
+			if P_NAME is null then
+				pragma error('Не заполнен реквизит "Наименование"');
+			end if;
+			
+			if P_COEFFICIENT is null then
+				pragma error('Не заполнен реквизит "Коэффициент"');
+			end if;
+			
+			for (
+		select a(1:a)
+		in ::[S226_LOAN_CTGR]all
+		where a.[CODE] = P_CODE
+	)
+			loop
+				pragma error('Уже существует запись с таким кодом');
+			end loop;
+			
+			-- Установка значения реквизита "Код"
+			[CODE] := P_CODE;
+			-- Установка значения реквизита "Наименование"
+			[NAME] := P_NAME;
+			-- Установка значения реквизита "Вид кредита"
+			[CREDIT_TYPE] := P_CREDIT_TYPE;
+			-- Установка значения реквизита "Коэффициент"
+			[COEFFICIENT] := P_COEFFICIENT;
+			
+		end;
+	end;
+end;

@@ -1,0 +1,89 @@
+/*
+Задание 11. Освещается в лекции Подготовка хранилища с доработкой, создание операций конвертации
+	1.Создать операцию конвертации в ТБП «Обновления версии» (CONV_57), 
+	с коротким именем UYYYYMMDD_S##_NN (где S## – префикс студента, NN – номер по порядку),
+	которая удалит доработку со схемы: 
+		•	удалит данные из созданных справочников
+		•	удалит добавленный метод из справочника «Расширения и перекрытия. Точки вызова» с компиляцией точки вызова
+		•	удалит вычисляемый параметр. 
+	2.Создать файл delete.pck с полным перечнем удаляемых объектов 
+	(представлений, операций и ТБП, созданных при выполнении задания).
+*/
+
+class CONV_57;
+@name('S226. Удаление доработки') /* Свойство операции "Наименование" */
+static method U20220307S226_03 is
+
+	-- удаление данных из справочников
+	procedure Delete_Data is
+		s226_prj_kind 	[KIND_PROJECT_REF];
+	begin	
+		-- удаление всех записей из справочника принадлежности кредита категории
+		delete t in ::[S226_CRED_CATEG]all;
+			[CONV].[LOG].WriteMess('В справочнике ' || ::[S226_CRED_CATEG]%classname || ' были удалены все записи"');
+		
+		-- удаление всех записей из справочника категорий
+		delete t in ::[S226_LOAN_CTGR]all;
+			[CONV].[LOG].WriteMess('В справочнике ' || ::[S226_LOAN_CTGR]%classname || ' были удалены все записи"');
+	exception
+		when others then
+			[CONV].[LOG].WriteMess('Произошла ошибка при удалении записей из справочников'|| ::[S226_CRED_CATEG]%classname || ' и ' || ::[S226_LOAN_CTGR]%classname);
+	end;
+	
+	-- удаление метода из справочника «Расширения и перекрытия. Точки вызова» с компиляцией точки вызова
+	procedure Delete_Method is
+		mdForProvCallPoint 	ref [APPAUX_CALLPOINT];
+		s226method			ref	[AUXAPP_METHOD];
+	begin
+		
+		locate mdForProvCallPoint in ::[APPAUX_CALLPOINT] 
+		where mdForProvCallPoint.[CODE] = 'MD_FOR_PROV';
+		
+		locate s226method in mdForProvCallPoint.[METHODS] 
+		where s226method.[SNAME] = 'S226_MD_FOR_PROV';
+		
+		s226method.[DELETE#AUTO](true);
+		
+		-- вызвать перекомпиляцию точки вызова
+		mdForProvCallPoint.[RECOMPILE];
+		
+		[CONV].[LOG].WriteMess('В справочнике ' || ::[APPAUX_CALLPOINT]%classname || ' в точке вызова "MD_FOR_PROV" был удален метод "S226_MD_FOR_PROV"');
+	exception
+		when others then
+			[CONV].[LOG].WriteMess('Произошла ошибка при удалении метода "S226_MD_FOR_PROV" в справочнике' || ::[APPAUX_CALLPOINT]%classname || ' в точке вызова "MD_FOR_PROV"');
+	end;
+	
+	-- удаление вычисляемого параметра
+	procedure Delete_Calc_Param is
+	begin
+		delete t in ::[CALC_PARAMS] where t.[CODE] = 'S226_ЛЬГОТ_КОЭФ';
+		[CONV].[LOG].WriteMess('В справочнике ' || ::[CALC_PARAMS]%classname || ' была удалена запись с кодом "S226_ЛЬГОТ_КОЭФ"');
+	exception
+		when others then
+			[CONV].[LOG].WriteMess('Произошла ошибка при удалении записи с кодом "S226_ЛЬГОТ_КОЭФ" в справочнике' || ::[CALC_PARAMS]%classname);
+	end;
+	
+	
+	U20220307S226_03 is
+	
+		execute is
+		begin
+			[CONV].[LOG].InitLog(&METHOD$SNAME||'_mess.log',true);
+			[CONV].[LOG].WriteMess('Начало выполнения операции ['||&METHOD$SNAME||'] '||&METHOD$NAME);
+			-- запускаем операции удаления
+			Delete_Data;
+			Delete_Method;
+			Delete_Calc_Param;
+			[CONV].[LOG].WriteMess('Окончание выполнения операции ['||&METHOD$SNAME||'] '||&METHOD$NAME);
+			[CONV].[LOG].InitLog;
+		end;
+	end;
+end; /* конeц static method U20220307S226_03 */
+
+/*
+ 11. delete t in ::[APPAUX_CALLPOINT] where t.[CODE] = 'MD_FOR_PROV' and t.[METHODS].[SNAME] = 'S226_MD_FOR_PROV';
+Так делать не надо - вы здесь удалить точку вызова, а не метод в ее массиве методов.
+
+
+Аналогично добавлению - после удаления записи из справочника CALC_PARAMS нужно сделать очистку ставшей ненужной библиотеки перевызова - посмотрите как это делается в операции CALC_PARAMS.DELETE#AUTO.
+ */

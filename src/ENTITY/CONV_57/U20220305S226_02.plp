@@ -1,0 +1,103 @@
+/*
+Задание 10. Освещается в лекции Подготовка хранилища с доработкой, создание операций конвертации
+	Для подготовки передачи изменений на схему банка создать операцию конвертации в ТБП «Обновления версии» (CONV_57), 
+	с коротким именем UYYYYMMDD_S##_NN (где S## – префикс студента, NN – номер по порядку), которая:
+		1.	Добавит в справочник «Расширения и перекрытия. Точки вызова» для записи с кодом MD_FOR_PROV 
+		в массив «Методы» операцию из задания 7 и запустит операцию «Перекомпиляция точки вызова» 
+		данного справочника над этой строкой;
+		2.	Добавит в справочник «Вычисляемые параметры» параметр S##_ЛЬГОТ_КОЭФ из задания 6;
+	Операция должна допускать многократный повторный запуск. 
+*/
+
+class CONV_57;
+
+@name('S226. Добавление системных записей') 
+static method U20220305S226_02 is
+
+--2.Добавит в справочник «Вычисляемые параметры» параметр S##_ЛЬГОТ_КОЭФ из задания 6;
+procedure New_Calc_Params is
+	rec_exist		ref	[CALC_PARAMS];
+begin
+	select a(a)
+	in ::[CALC_PARAMS]
+	where a.[CODE] = 'S226_ЛЬГОТ_КОЭФ'
+	into rec_exist;
+	
+	[CONV].[LOG].WriteMess('В справочнике ' || ::[CALC_PARAMS]%classname || ' уже существует запись с кодом "S226_ЛЬГОТ_КОЭФ"');
+	
+exception
+	when NO_DATA_FOUND then
+		[CALC_PARAMS].[NEW#AUTO](P#NAME 			== 'S226. Определение льготного коэффициента',
+								P#CODE 				== 'S226_ЛЬГОТ_КОЭФ',
+								P#GROUP 			== 'PR_CRED',
+								P#METHOD 			== 'S226_LOAN_COEFF',
+								P#CLASS				== 'PR_CRED',
+								P#TYPE_RESULT 		== 'N',
+								P_NOTE 				== null
+		);
+		[CONV].[LOG].WriteMess('В справочник ' || ::[CALC_PARAMS]%classname || ' добавлена запись с кодом "S226_ЛЬГОТ_КОЭФ"');
+		
+		::[CONV].[LOG].WRITEMESS(TB$ || TB$ || 'Начата компиляция вычисляемых параметров');
+		::[CALC_PARAMS].[MAKE_CP_LIBS];
+		::[CONV].[LOG].WRITEMESS(TB$ || TB$ || 'Компиляция вычисляемых параметров завершена');
+	
+	when TOO_MANY_ROWS then
+		[CONV].[LOG].WriteMess('В справочнике ' || ::[CALC_PARAMS]%classname || ' существует более одной с кодом "S226_ЛЬГОТ_КОЭФ"');
+end;
+
+U20220305S226_02 is
+
+
+execute is
+	max_priority 			::[AUXAPP_METHOD].[PRIORITY]%type;
+	record_exist			::[APPAUX_CALLPOINT];
+begin
+	[CONV].[LOG].InitLog(&METHOD$SNAME||'_mess.log',true);
+	[CONV].[LOG].WriteMess('Начало выполнения операции ['||&METHOD$SNAME||'] '||&METHOD$NAME);
+	
+	--2.Добавит в справочник «Вычисляемые параметры» параметр S##_ЛЬГОТ_КОЭФ из задания 6;
+	
+	New_Calc_Params();
+	
+	/*1.Добавит в справочник «Расширения и перекрытия. Точки вызова» для записи с кодом MD_FOR_PROV
+	в массив «Методы» операцию из задания 7 и запустит операцию «Перекомпиляция точки вызова» 
+	данного справочника над этой строкой;*/
+	
+	-- если нашли такой метод в точке вызова
+	select md_for_pr(md_for_pr)
+	in ::[APPAUX_CALLPOINT]
+	where md_for_pr.[CODE] = 'MD_FOR_PROV' 
+		and md_for_pr.[METHODS].[SNAME] = 'S226_MD_FOR_PROV'
+	into record_exist;
+	
+	[CONV].[LOG].WriteMess('Метод S226_MD_FOR_PROV уже существует в точке вызова MD_FOR_PROV');
+	
+	[CONV].[LOG].WriteMess('Окончание выполнения операции ['||&METHOD$SNAME||'] '||&METHOD$NAME);
+	[CONV].[LOG].InitLog;
+	
+	exception when NO_DATA_FOUND then
+		for (select md_for_pr(md_for_pr.[METHODS] : hook_methods)
+			in ::[APPAUX_CALLPOINT]
+			where md_for_pr.[CODE] = 'MD_FOR_PROV'
+			)	
+		loop
+			select a(max(nvl(a.[PRIORITY], 0))) in md_for_pr.hook_methods into max_priority;
+			max_priority := max_priority + 1;
+			
+			md_for_pr.hook_methods.[NEW#AUTO](	P_GRP 				== null,
+												P_PRIORITY			== max_priority,
+												P_CLS				== 'HOOK',
+												P_SNAME 			== 'S226_MD_FOR_PROV',
+												P_PLP_CODE 			== null,
+												P_COMP 				== true 
+				
+			);		
+			[CONV].[LOG].WriteMess('В справочник ' ||::[APPAUX_CALLPOINT]%classname|| ' для точки вызова MD_FOR_PROV был добавлен метод S226_MD_FOR_PROV с приоритетом ' || max_priority);
+				
+			[CONV].[LOG].WriteMess('Окончание выполнения операции ['||&METHOD$SNAME||'] '||&METHOD$NAME);
+			[CONV].[LOG].InitLog;
+		end loop;
+end;
+
+end; 
+end; 

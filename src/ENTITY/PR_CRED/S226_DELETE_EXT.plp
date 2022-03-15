@@ -1,0 +1,25 @@
+class PR_CRED;
+@import_plsql(true)
+@this(create_on_start:=true)
+@name('S226. Удаление кредитного договора')
+@tag('EXTENSION')
+destructor S226_DELETE_EXT instead of S226_DELETE#AUTO is
+	S226_DELETE_EXT 
+	 is
+		validate is
+		begin
+			&BASE$SETVARS;
+			&BASE$VALIDATE;
+			&BASE$GETVARS;
+		end;
+		execute is
+		begin
+			&BASE$SETVARS;
+			&BASE$EXECUTE;
+		
+		-- удаление связанной категории
+		delete rec in ::[S226_CRED_CATEG] all where rec.[CREDIT] = this;
+		
+		end;
+	end;
+end;

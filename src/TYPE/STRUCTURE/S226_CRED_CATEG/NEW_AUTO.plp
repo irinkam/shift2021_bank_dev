@@ -1,0 +1,107 @@
+class S226_CRED_CATEG;
+@name('Добавить')
+@tag('CREATED')
+
+constructor NEW_AUTO is
+	NEW_AUTO (
+		@name('Кредит')         P_CREDIT   in [PR_CRED_REF],
+		@name('Дата начала')    P_DATE_BEG in [DATE],
+		@name('Дата окончания') P_DATE_END in [DATE],
+		@name('Категория')      P_CRED_CAT in [S226_LOAN_CT_REF]
+	) return ref [S226_CRED_CATEG] is
+	
+	
+		validate is
+		begin
+			-- Start initialization of parameters and variables
+			if p_message = 'DEFAULT' then
+				P_CREDIT := this.[CREDIT];
+				P_DATE_BEG := this.[DATE_BEG];
+				P_DATE_END := this.[DATE_END];
+				P_CRED_CAT := this.[CRED_CAT];
+			end if;
+		-- End initialization of parameters and variables
+		end;
+		
+		
+		execute is
+		
+		begin
+			-- Проверка обязательности полей – Кредит, Категория, дата начала
+			if P_CREDIT is null then
+				pragma error('Не заполнен реквизит "Кредит"');
+			end if;
+			if P_CRED_CAT is null then
+				pragma error('Не заполнен реквизит "Категория"');
+			end if;
+			if P_DATE_BEG is null then
+				pragma error('Не заполнен реквизит "Дата начала"');
+			end if;
+			
+			/*  Проверка корректности дат – нельзя сохранить запись, 
+			у которой дата окончания < даты начала */
+			if P_DATE_BEG > P_DATE_END then
+				pragma error('Дата начала не может быть больше даты окончания');
+			end if;
+			/*  Проверка пересечения дат – нельзя сохранить запись, 
+			если есть другая запись по данному кредиту, 
+			у которой «Дата начала» > «Даты начала» сохраняемой записи */
+			for (
+				select a(1 :a)
+				in ::[S226_CRED_CATEG]all
+				where a.[DATE_BEG] > P_DATE_BEG and a.[CREDIT] = P_CREDIT
+			)
+			loop
+				pragma error('По данному кредитному договору уже существует запись с датой начала позже указанной');
+			end loop;
+			
+			-- при сохранении записи, если по данному кредиту есть другая запись, 
+			-- у которой «Дата начала» < «Даты начала» сохраняемой записи и 
+			-- «Дата окончания» = Пусто, у этой записи проставляется 
+			-- «Дата окончания» = «Дате начала» сохраняемой записи минус 1 день
+			
+			declare
+				record_exists ref[S226_CRED_CATEG];
+			
+			begin
+				select a(a%id)
+				in ::[S226_CRED_CATEG]all
+				where a.[CREDIT] = P_CREDIT 
+				and a.[DATE_BEG] < P_DATE_BEG 
+				and a.[DATE_END] is null
+				into record_exists;
+				
+				update a (a.[DATE_END] = P_DATE_BEG - 1) in ::[S226_CRED_CATEG] where a%id = record_exists;
+			exception 
+				when NO_DATA_FOUND then
+				null;
+			when TOO_MANY_ROWS then
+				pragma error('Найдено более одной записи с датой начала меньше указанной и пустой 
+							датой окончания для данного кредитного договора');
+			when others then
+				pragma error('Необработанное исключение');
+			end;
+			
+			-- при сохранении записи, если по данному кредиту есть другая запись, 
+			-- у которой «Дата начала» = «Дате начала» сохраняемой записи, данная запись удаляется
+			for (
+				select a(a :id)
+				in ::[S226_CRED_CATEG]all
+				where a.[DATE_BEG] = P_DATE_BEG and a.[CREDIT] = P_CREDIT 
+			)
+			loop
+				delete t in ::[S226_CRED_CATEG] where t%id = a.id;
+				stdio.put_line_buf('Запись по кредитному договору №' || P_CREDIT || ' с такой же датой уже существует, поэтому она была удалена');
+			end loop;
+			
+			-- Установка значения реквизита "Кредит"
+			[CREDIT] := P_CREDIT;
+			-- Установка значения реквизита "Дата начала"
+			[DATE_BEG] := P_DATE_BEG;
+			-- Установка значения реквизита "Дата окончания"
+			[DATE_END] := P_DATE_END;
+			-- Установка значения реквизита "Категория"
+			[CRED_CAT] := P_CRED_CAT;
+		end;
+	end;
+end;
